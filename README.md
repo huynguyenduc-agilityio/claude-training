@@ -1,93 +1,165 @@
 # claude-training
 
+Practice repo for the Agility IO **AI Tools – Training** program: 15 full-time working days that make Claude the core working tool for developers (web/game/mobile) and BA/QA staff.
 
+- Source plan: <https://dojo.agilityio.dev/index.html>
+- Claude Code docs: <https://code.claude.com/docs>
+- Core tool: **Claude Desktop** with its **Chat**, **Cowork**, and **Code** tabs. Developers work mainly in the **Code** tab.
 
-## Getting started
+> The source site last verified feature and course names on 2026-10-07, and they change quickly. Re-check the source pages before each week.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+---
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Program Shape
 
-## Add your files
+| Phase | Days | Content |
+|---|---|---|
+| Week 1: Shared fundamentals | 1–3 | Ticket analysis, reproduce, fix, PR, review, merge, git, and Claude habits |
+| Weeks 2–3: Track split | 4–11 | Developer track (Claude Code Desktop) and BA/QA track in parallel |
+| Capstone | 12–15 | A cross-functional sprint that exercises every skill |
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+Pass/fail checkpoints on **Days 3, 6, 11, and 15**.
+
+### Day-by-Day Schedule (Developer track)
+
+| Day | Topic | Key work | Checkpoint |
+|---|---|---|---|
+| 01 | Mental model + Claude basics | Claude 101 course; get useful answers to 3 real work questions; clone/branch/commit/push | |
+| 02 | Ticket analysis, reproduce & understand | 3-sentence analysis of 5 tickets; reproduce a seeded bug; write a failing test; `pull --rebase`, merge conflict #1 | |
+| 03 | Fix, review, merge | Fix on a branch with a test; write the PR description; review with ≥3 comments; resolve the conflict and merge | **CP1** |
+| 04 | Install & daily loop | Set up the Code tab; sessions, `/resume`; permission modes; plan mode (Shift+Tab, or Alt+M on Windows); take 2 tickets to PR | |
+| 05 | Memory & context | Write the team `CLAUDE.md`; auto memory, `/memory`, `/compact`; `/rewind` (Esc Esc) | |
+| 06 | Flagship & parallel | PR walkthrough artifact; `/loop` + `loop.md`; Remote Control (`/rc`); `ultrathink` and `/effort`; `claude --worktree`; subagents; cloud session | **CP2** |
+| 07 | Skills & plugins | 1 team skill + 1 personal slash command in `.claude/` (via PR); install and evaluate a plugin with `/plugin` | |
+| 08 | MCP & connectors | Add GitHub MCP and Playwright MCP; use one MCP tool end-to-end | |
+| 09 | Hooks & automation | 1 hook (format-on-edit / block-forbidden-command / notify-on-finish) via PR; `/goal`, scheduled tasks, routines, `@claude` in CI | |
+| 10 | Review & quality | `/code-review`, `/code-review ultra`, `/security-review`; fix findings, get CI green, log false positives | |
+| 11 | Role day | Playwright MCP; Web: Claude in Chrome + browser pane; Mobile: iOS Simulator; Game: computer use | **CP3** |
+| 12 | Capstone: kickoff & planning | "Client" gives a rough brief; BA writes the ticket pack, QA the test matrix; developers ask questions only through tickets | |
+| 13 | Capstone: build | One parallel session per ticket; plan mode first; one PR per ticket | |
+| 14 | Capstone: test & harden | Regression and CI; `/loop` to watch the build; `/code-review` (ultrareview for auth/data changes) | |
+| 15 | Review, merge, demo | Cross-review, tag a release, deploy; steer from a phone; retro; personal playbook | **Final** |
+
+---
+
+## Checkpoints
+
+**Checkpoint 1 (Day 3), everyone**
+- Reproduce an assigned bug and write the repro steps in the ticket
+- Fix it on a branch with a test
+- Open a PR with a self-contained description (what / why / how tested / screenshots)
+- One peer review with ≥3 actionable comments, and one merge with a conflict resolved
+
+**Checkpoint 2 (Day 6), Developer**
+- Two parallel sessions (worktrees), both merged
+- One plan-mode change steered through diff comments
+- One artifact
+- One Remote Control steer
+- One `/loop` run
+
+**Checkpoint 3 (Day 11), Developer**
+- One skill and one hook merged
+- One MCP tool used end-to-end
+- One `/code-review` or ultrareview report acted on
+- Role-day exercise done
+
+**Final (Day 15)**
+- Capstone shipped end-to-end (tagged release and deploy)
+- Track skill bar demonstrated; Day 3, 6, and 11 checkpoints all passed
+
+### Developer Track Skill Bar
+1. Run two parallel isolated sessions on two tickets and merge both cleanly
+2. Use plan mode for a risky change and steer it with diff comments
+3. Publish an artifact that walks a teammate through your PR
+4. Start a session at your desk and continue it from your phone with Remote Control
+5. Run a `/loop` that babysits a PR through CI; run `/code-review` (or ultrareview) on a real branch
+6. Ship one team skill (e.g. a release checklist) and one hook (e.g. format-on-edit)
+
+---
+
+## Daily Workflow: Ticket → Fix → PR
+
+1. **Analyze**: paste the ticket and ask Claude to explore the codebase and find the likely bug location.
+2. **Plan**: use plan mode, review the plan, then approve it.
+3. **Fix**: implement on a branch, watch the diff pane, and steer with hunk comments.
+4. **Verify**: Claude runs the tests and the app (browser pane for web, simulator for iOS).
+5. **Ship**: open a PR with a description; the PR pane watches CI.
+6. **Review**: `/code-review` as a first pass, then human review; ultrareview for risky changes.
+
+**Habits**
+- Give context (ticket, error, constraints), not just orders.
+- One topic per session, one session per ticket.
+- AI output is a proposal until you have run it.
+- Never merge code you cannot explain.
+
+### Code Review Checklist (Day 3)
+Review in order: **Correctness → Tests → Readability → Security basics** (input handling, secrets, permissions) **→ Scope creep**. Comments must be actionable, with concrete guidance rather than verdicts.
+
+---
+
+## Safety Rails (Non-Negotiable)
+
+- **Never** share client secrets or customer data with any AI tool.
+- Don't put client code into cloud sessions or published artifacts unless the contract allows it. Ask the lead when unsure.
+- Never let Claude push directly to shared branches on client repos; always go through a PR / MR.
+- Configure `allow`/`deny` permission rules per tool; use sandboxed bash for untrusted commands and plan mode for anything destructive.
+- Review AI-assisted PRs to the same standard as human PRs.
+
+---
+
+## Repo Layout (Planned)
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.asoft-python.com/huy.nguyenduc/claude-training.git
-git branch -M main
-git push -uf origin main
+claude-training/
+├── README.md
+├── CLAUDE.md                 # Day 5: build/run, conventions, "never do" list
+├── loop.md                   # Day 6: maintenance prompt for /loop
+├── .claude/
+│   ├── skills/               # Day 7: release-checklist, how-we-write-migrations, review-checklist…
+│   ├── commands/             # Day 7: personal slash commands
+│   ├── agents/               # custom subagents
+│   └── settings.json         # Day 9: hooks, allow/deny permissions
+├── notes/
+│   └── day-XX.md             # daily notes and results
+└── playbook.md               # Day 15: one-page "How I work with Claude"
 ```
 
-## Integrate with your tools
+> **Note:** the source plan assumes GitHub (GitHub connector, GitHub Actions, `@claude`, `/install-github-app`), but this repo is hosted on internal GitLab (`gitlab.asoft-python.com`). Map those exercises to GitLab MRs / GitLab CI, or practice them on a separate GitHub repo.
 
-* [Set up project integrations](https://gitlab.asoft-python.com/huy.nguyenduc/claude-training/-/settings/integrations)
+---
 
-## Collaborate with your team
+## Courses
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+**Claude Academy** (free with a claude.ai sign-in)
 
-## Test and Deploy
+| Course | When |
+|---|---|
+| [AI Fluency: Framework & foundations](https://academy.claude.com/courses/ai-fluency-framework-foundations) | Day 1 |
+| [AI capabilities and limitations](https://academy.claude.com/courses/ai-capabilities-and-limitations) | Day 1 |
+| [Claude 101](https://academy.claude.com/courses/claude-101) | Days 1–2 |
+| [Claude Code 101](https://academy.claude.com/courses/claude-code-101) | Day 4 |
+| [Claude Code in action](https://academy.claude.com/courses/claude-code-in-action) | Day 4 |
+| [Introduction to subagents](https://academy.claude.com/courses/introduction-to-subagents) | Day 6 |
+| [Introduction to agent skills](https://academy.claude.com/courses/introduction-to-agent-skills) | Day 7 |
+| [Introduction to Model Context Protocol](https://academy.claude.com/courses/introduction-to-model-context-protocol) | Day 8 |
+| [AI-native SDLC playbook](https://academy.claude.com/courses/ai-native-sdlc-playbook) | Days 11–12 (leads/seniors) |
+| [MCP advanced topics](https://academy.claude.com/courses/model-context-protocol-advanced-topics) | After the program |
+| [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api) | After the program |
+| [Claude Platform 101](https://academy.claude.com/courses/claude-platform-101) | After the program |
 
-Use the built-in continuous integration in GitLab.
+**Official docs**
+- [Quickstart](https://code.claude.com/docs/en/quickstart) · [Desktop quickstart](https://code.claude.com/docs/en/desktop-quickstart) · [Common workflows](https://code.claude.com/docs/en/common-workflows) · [Best practices](https://code.claude.com/docs/en/best-practices)
+- [Artifacts](https://code.claude.com/docs/en/artifacts) · [Chrome integration](https://code.claude.com/docs/en/chrome) · [Prompt library](https://code.claude.com/docs/en/prompt-library) · [What's new](https://code.claude.com/docs/en/whats-new/index)
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+---
 
-***
+## Quick Commands
 
-# Editing this README
+```bash
+claude --resume                                   # reopen an earlier session
+claude --worktree ticket-123                      # isolated session on a git worktree
+claude mcp add --transport http github https://api.githubcopilot.com/mcp/
+claude mcp add playwright -- npx -y @playwright/mcp@latest
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+In a session: `/resume` · `/memory` · `/compact` · `/rewind` · `/loop 5m <task>` · `/rc` · `/effort` · `/plugin` · `/hooks` · `/goal` · `/code-review` · `/code-review ultra` · `/security-review` · `/mcp` · `/chrome`
