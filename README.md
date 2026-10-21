@@ -107,24 +107,30 @@ Review in order: **Correctness → Tests → Readability → Security basics** (
 
 ---
 
-## Repo Layout (Planned)
+## Practice App
+
+Exercises run on a small sandbox app, **AI Usage & Cost Tracker**: setup and commands are in
+[app/README.md](app/README.md).
+
+---
+
+## Repo Layout
 
 ```
 claude-training/
-├── README.md
-├── CLAUDE.md                 # Day 5: build/run, conventions, "never do" list
-├── loop.md                   # Day 6: maintenance prompt for /loop
-├── .claude/
-│   ├── skills/               # Day 7: release-checklist, how-we-write-migrations, review-checklist…
-│   ├── commands/             # Day 7: personal slash commands
-│   ├── agents/               # custom subagents
-│   └── settings.json         # Day 9: hooks, allow/deny permissions
-├── notes/
-│   └── day-XX.md             # daily notes and results
-└── playbook.md               # Day 15: one-page "How I work with Claude"
+├── README.md                 # training plan overview from the course (this file)
+├── CLAUDE.md                 # how Claude should work in this repo (extended on Day 5)
+├── app/                      # practice app: server/ (API) and web/ (dashboard)
+├── docs/
+│   ├── lessons/day-XX-<slug>/ # knowledge.md, exercise-*.md, evidence/
+│   ├── tickets/              # backlog (EXP-1XX)
+│   ├── plans/                # one plan per ticket (from Day 3)
+│   └── reference/            # prompt library
+└── .claude/                  # Day 7+: skills, commands, hooks, settings
 ```
 
-> **Note:** the source plan assumes GitHub (GitHub connector, GitHub Actions, `@claude`, `/install-github-app`), but this repo is hosted on internal GitLab (`gitlab.asoft-python.com`). Map those exercises to GitLab MRs / GitLab CI, or practice them on a separate GitHub repo.
+> **Note:** the source plan assumes GitHub (GitHub connector, GitHub Actions, `@claude`,
+> `/install-github-app`). This repo has no remote yet; a GitHub repo is created on Day 3.
 
 ---
 
