@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+*.log
+
+# local environment and data
+.env
+app/server/data/*.db
+app/server/data/*.db-*
+
+# editors and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store

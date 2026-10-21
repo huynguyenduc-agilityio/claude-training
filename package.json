@@ -1,0 +1,16 @@
+{
+  "name": "claude-training",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter server --filter web dev",
+    "test": "pnpm --filter server test",
+    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm --filter web build",
+    "seed": "pnpm --filter server seed"
+  },
+  "packageManager": "pnpm@10.16.0"
+}
