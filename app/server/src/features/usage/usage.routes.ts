@@ -1,0 +1,38 @@
+import { Router } from 'express'
+import type { AppConfig } from '../../config.ts'
+import { ValidationError } from '../../shared/errors.ts'
+import { currentMonthKey, isMonthKey } from '../../shared/time.ts'
+import type { PriceTable } from '../pricing/pricing.ts'
+import { listMonth } from './usage.query.ts'
+import type { UsageRepository } from './usage.repository.ts'
+import { parseNewUsageRecord } from './usage.validation.ts'
+
+interface Deps {
+  repository: UsageRepository
+  pricing: PriceTable
+  config: AppConfig
+}
+
+export const readMonth = (value: unknown, timeZone: string): string => {
+  if (value === undefined) return currentMonthKey(timeZone)
+  if (typeof value !== 'string' || !isMonthKey(value)) {
+    throw new ValidationError('month must be YYYY-MM')
+  }
+  return value
+}
+
+export const createUsageRouter = ({ repository, pricing, config }: Deps): Router => {
+  const router = Router()
+
+  router.get('/', (req, res) => {
+    const month = readMonth(req.query.month, config.timeZone)
+    res.json(listMonth(repository.listAll(), month, config.timeZone, pricing))
+  })
+
+  router.post('/', (req, res) => {
+    const record = repository.insert(parseNewUsageRecord(req.body, pricing))
+    res.status(201).json(record)
+  })
+
+  return router
+}
