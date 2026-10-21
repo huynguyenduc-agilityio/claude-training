@@ -43,4 +43,6 @@ Use `pnpm` only.
 - Do not read or print `.env` files.
 - No new dependencies without asking.
 - Commit only when asked. Never push.
+- No AI attribution in commits or PRs: no `Co-Authored-By: Claude ...` trailer, no "Generated with
+  Claude Code" line.
 - Code, comments, commits and docs in English. Chat with the user in Vietnamese.
