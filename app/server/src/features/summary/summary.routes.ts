@@ -17,7 +17,7 @@ export const createSummaryRouter = ({ repository, pricing, config }: Deps): Rout
 
   router.get('/', (req, res) => {
     const month = readMonth(req.query.month, config.timeZone)
-    const summary = summarizeMonth(repository.listAll(), month, pricing)
+    const summary = summarizeMonth(repository.listAll(), month, config.timeZone, pricing)
     res.json({ ...summary, budget: budgetStatus(summary.totalCost, config.monthlyBudgetUsd) })
   })
 
