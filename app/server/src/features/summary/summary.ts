@@ -1,6 +1,7 @@
 import { roundCents } from '../../shared/money.ts'
 import { getPrice, type PriceTable } from '../pricing/pricing.ts'
 import { calculateCost } from '../usage/cost.ts'
+import { recordsInMonth } from '../usage/usage.query.ts'
 import type { UsageRecord } from '../usage/usage.ts'
 
 export interface Breakdown {
@@ -34,15 +35,17 @@ const groupCost = (
     .sort((a, b) => b.cost - a.cost)
 }
 
-/** Totals and breakdowns for one `YYYY-MM` month. */
+/** Totals and breakdowns for one `YYYY-MM` month in the configured time zone. */
 export const summarizeMonth = (
   records: UsageRecord[],
   month: string,
+  timeZone: string,
   pricing: PriceTable,
 ): MonthlySummary => {
-  const priced = records
-    .filter((record) => record.timestamp.startsWith(`${month}-`))
-    .map((record) => ({ record, cost: calculateCost(record, getPrice(pricing, record.model)) }))
+  const priced = recordsInMonth(records, month, timeZone).map((record) => ({
+    record,
+    cost: calculateCost(record, getPrice(pricing, record.model)),
+  }))
 
   const total = priced.reduce((sum, { cost }) => sum + cost, 0)
 

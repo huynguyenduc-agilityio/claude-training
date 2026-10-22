@@ -27,14 +27,14 @@ describe('summarizeMonth', () => {
   ]
 
   it('totals the month', () => {
-    const summary = summarizeMonth(records, '2026-09', pricing)
+    const summary = summarizeMonth(records, '2026-09', 'UTC', pricing)
 
     expect(summary.recordCount).toBe(3)
     expect(summary.totalCost).toBe(1.4)
   })
 
   it('breaks the month down by model, most expensive first', () => {
-    const summary = summarizeMonth(records, '2026-09', pricing)
+    const summary = summarizeMonth(records, '2026-09', 'UTC', pricing)
 
     expect(summary.byModel).toEqual([
       { key: 'orion-large', cost: 1, records: 1 },
@@ -43,7 +43,7 @@ describe('summarizeMonth', () => {
   })
 
   it('breaks the month down by project', () => {
-    const summary = summarizeMonth(records, '2026-09', pricing)
+    const summary = summarizeMonth(records, '2026-09', 'UTC', pricing)
 
     expect(summary.byProject).toEqual([
       { key: 'code-review', cost: 1.2, records: 2 },
@@ -52,12 +52,21 @@ describe('summarizeMonth', () => {
   })
 
   it('returns zeros for a month without records', () => {
-    expect(summarizeMonth(records, '2026-07', pricing)).toEqual({
+    expect(summarizeMonth(records, '2026-07', 'UTC', pricing)).toEqual({
       month: '2026-07',
       totalCost: 0,
       recordCount: 0,
       byModel: [],
       byProject: [],
     })
+  })
+
+  it('picks the month in the given time zone', () => {
+    // 2026-09-30 20:00 UTC is 2026-10-01 03:00 in Ho Chi Minh City (UTC+7)
+    const lateNight = [make(5, { timestamp: '2026-09-30T20:00:00.000Z' })]
+
+    expect(summarizeMonth(lateNight, '2026-10', 'Asia/Ho_Chi_Minh', pricing).recordCount).toBe(1)
+    expect(summarizeMonth(lateNight, '2026-09', 'Asia/Ho_Chi_Minh', pricing).recordCount).toBe(0)
+    expect(summarizeMonth(lateNight, '2026-09', 'UTC', pricing).recordCount).toBe(1)
   })
 })
