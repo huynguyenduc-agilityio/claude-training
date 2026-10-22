@@ -60,5 +60,7 @@ describe('GET /api/summary', () => {
 
     expect(summary.totalCost).toBe(usage.totalCost)
     expect(summary.recordCount).toBe(usage.items.length)
+    expect(summary.budget.spent).toBe(usage.totalCost)
+    expect(summary.budget.ratio).toBe(usage.totalCost / config.monthlyBudgetUsd)
   })
 })
