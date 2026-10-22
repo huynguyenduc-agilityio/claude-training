@@ -60,4 +60,13 @@ describe('summarizeMonth', () => {
       byProject: [],
     })
   })
+
+  it('picks the month in the given time zone', () => {
+    // 2026-09-30 20:00 UTC is 2026-10-01 03:00 in Ho Chi Minh City (UTC+7)
+    const lateNight = [make(5, { timestamp: '2026-09-30T20:00:00.000Z' })]
+
+    expect(summarizeMonth(lateNight, '2026-10', 'Asia/Ho_Chi_Minh', pricing).recordCount).toBe(1)
+    expect(summarizeMonth(lateNight, '2026-09', 'Asia/Ho_Chi_Minh', pricing).recordCount).toBe(0)
+    expect(summarizeMonth(lateNight, '2026-09', 'UTC', pricing).recordCount).toBe(1)
+  })
 })
