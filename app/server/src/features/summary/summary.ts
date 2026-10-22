@@ -41,7 +41,7 @@ export const summarizeMonth = (
   pricing: PriceTable,
 ): MonthlySummary => {
   const priced = records
-    .filter((record) => record.timestamp.slice(0, 7) === month)
+    .filter((record) => record.timestamp.startsWith(`${month}-`))
     .map((record) => ({ record, cost: calculateCost(record, getPrice(pricing, record.model)) }))
 
   const total = priced.reduce((sum, { cost }) => sum + cost, 0)
