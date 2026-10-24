@@ -29,7 +29,10 @@ export const listMonth = (
   pricing: PriceTable,
 ): MonthlyUsage => {
   const items = recordsInMonth(records, month, timeZone)
-    .map((record) => ({ ...record, cost: calculateCost(record, getPrice(pricing, record.model)) }))
+    .map((record) => ({
+      ...record,
+      cost: calculateCost(record, getPrice(pricing, record.model, record.timestamp)),
+    }))
     .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
 
   const total = items.reduce((sum, item) => sum + item.cost, 0)

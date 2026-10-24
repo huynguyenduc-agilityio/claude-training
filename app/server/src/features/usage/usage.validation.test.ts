@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseNewUsageRecord } from './usage.validation.ts'
 
-const pricing = { 'orion-mini': { inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 } }
+const pricing = { 'orion-mini': [{ inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 }] }
 
 const valid = {
   timestamp: '2026-10-02T09:30:00Z',

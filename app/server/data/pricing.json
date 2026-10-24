@@ -1,5 +1,8 @@
 {
-  "orion-large": { "inputPerMTok": 5, "outputPerMTok": 25, "cachedInputPerMTok": 0.5 },
-  "orion-mini": { "inputPerMTok": 1, "outputPerMTok": 5, "cachedInputPerMTok": 0.1 },
-  "lyra-flash": { "inputPerMTok": 0.3, "outputPerMTok": 2.5, "cachedInputPerMTok": 0.03 }
+  "orion-large": [{ "inputPerMTok": 5, "outputPerMTok": 25, "cachedInputPerMTok": 0.5 }],
+  "orion-mini": [{ "inputPerMTok": 1, "outputPerMTok": 5, "cachedInputPerMTok": 0.1 }],
+  "lyra-flash": [
+    { "inputPerMTok": 0.3, "outputPerMTok": 2.5, "cachedInputPerMTok": 0.03 },
+    { "from": "2026-10-01T00:00:00Z", "inputPerMTok": 0.2, "outputPerMTok": 2, "cachedInputPerMTok": 0.03 }
+  ]
 }

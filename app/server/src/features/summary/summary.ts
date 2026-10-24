@@ -44,7 +44,7 @@ export const summarizeMonth = (
 ): MonthlySummary => {
   const priced = recordsInMonth(records, month, timeZone).map((record) => ({
     record,
-    cost: calculateCost(record, getPrice(pricing, record.model)),
+    cost: calculateCost(record, getPrice(pricing, record.model, record.timestamp)),
   }))
 
   const total = priced.reduce((sum, { cost }) => sum + cost, 0)
