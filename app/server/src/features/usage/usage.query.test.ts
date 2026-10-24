@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { listMonth } from './usage.query.ts'
 import type { UsageRecord } from './usage.ts'
 
-const pricing = { 'orion-mini': { inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 } }
+const pricing = { 'orion-mini': [{ inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 }] }
 
 const make = (id: number, timestamp: string): UsageRecord => ({
   id,
@@ -32,6 +32,31 @@ describe('listMonth', () => {
 
     expect(result.items[0]?.cost).toBeCloseTo(0.2)
     expect(result.totalCost).toBe(0.4)
+  })
+
+  it('prices each record at the price of its timestamp (EXP-103)', () => {
+    const dated = {
+      'lyra-flash': [
+        { inputPerMTok: 0.3, outputPerMTok: 2.5, cachedInputPerMTok: 0.03 },
+        { from: '2026-10-01T00:00:00Z', inputPerMTok: 0.2, outputPerMTok: 2, cachedInputPerMTok: 0.03 },
+      ],
+    }
+    // Both are October in Ho Chi Minh City; the first is still September in UTC
+    const lyra = (id: number, timestamp: string): UsageRecord => ({
+      ...make(id, timestamp),
+      model: 'lyra-flash',
+      inputTokens: 1_000_000,
+      outputTokens: 1_000_000,
+    })
+    const result = listMonth(
+      [lyra(1, '2026-09-30T23:59:59.000Z'), lyra(2, '2026-10-01T00:00:00.000Z')],
+      '2026-10',
+      'Asia/Ho_Chi_Minh',
+      dated,
+    )
+
+    expect(result.items.map((item) => item.cost)).toEqual([2.2, 2.8])
+    expect(result.totalCost).toBe(5)
   })
 
   it('returns an empty month', () => {

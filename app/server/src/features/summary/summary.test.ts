@@ -3,8 +3,8 @@ import type { UsageRecord } from '../usage/usage.ts'
 import { summarizeMonth } from './summary.ts'
 
 const pricing = {
-  'orion-large': { inputPerMTok: 5, outputPerMTok: 25, cachedInputPerMTok: 0.5 },
-  'orion-mini': { inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 },
+  'orion-large': [{ inputPerMTok: 5, outputPerMTok: 25, cachedInputPerMTok: 0.5 }],
+  'orion-mini': [{ inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 }],
 }
 
 const make = (id: number, overrides: Partial<UsageRecord>): UsageRecord => ({
@@ -59,6 +59,26 @@ describe('summarizeMonth', () => {
       byModel: [],
       byProject: [],
     })
+  })
+
+  it('prices each record at the price of its timestamp (EXP-103)', () => {
+    const dated = {
+      'lyra-flash': [
+        { inputPerMTok: 0.3, outputPerMTok: 2.5, cachedInputPerMTok: 0.03 },
+        { from: '2026-10-01T00:00:00Z', inputPerMTok: 0.2, outputPerMTok: 2, cachedInputPerMTok: 0.03 },
+      ],
+    }
+    const lyra = { model: 'lyra-flash', inputTokens: 1_000_000, outputTokens: 1_000_000 }
+    // Both are October in Ho Chi Minh City; the first is still before the change in UTC
+    const records = [
+      make(6, { ...lyra, timestamp: '2026-09-30T23:59:59.000Z' }),
+      make(7, { ...lyra, timestamp: '2026-10-01T00:00:00.000Z' }),
+    ]
+
+    const summary = summarizeMonth(records, '2026-10', 'Asia/Ho_Chi_Minh', dated)
+
+    expect(summary.totalCost).toBe(5)
+    expect(summary.byModel).toEqual([{ key: 'lyra-flash', cost: 5, records: 2 }])
   })
 
   it('picks the month in the given time zone', () => {

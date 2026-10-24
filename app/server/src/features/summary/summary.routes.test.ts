@@ -6,7 +6,7 @@ import { openDatabase } from '../../shared/db.ts'
 import { createUsageRepository } from '../usage/usage.repository.ts'
 
 const pricing = {
-  'orion-mini': { inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 },
+  'orion-mini': [{ inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 }],
 }
 
 const config: AppConfig = {
