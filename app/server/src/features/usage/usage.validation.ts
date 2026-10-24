@@ -18,6 +18,14 @@ const requireInteger = (body: Record<string, unknown>, field: string): number =>
   return value
 }
 
+const requireNonNegative = (value: number, field: string): number => {
+  if (value < 0) throw new ValidationError(`${field} must not be negative`)
+  return value
+}
+
+const requireCount = (body: Record<string, unknown>, field: string): number =>
+  requireNonNegative(requireInteger(body, field), field)
+
 export const parseNewUsageRecord = (body: unknown, pricing: PriceTable): NewUsageRecord => {
   if (typeof body !== 'object' || body === null) {
     throw new ValidationError('Body must be a JSON object')
@@ -36,13 +44,14 @@ export const parseNewUsageRecord = (body: unknown, pricing: PriceTable): NewUsag
   if (cached !== undefined && cached !== null && !isInteger(cached)) {
     throw new ValidationError('cachedInputTokens must be an integer')
   }
+  if (isInteger(cached)) requireNonNegative(cached, 'cachedInputTokens')
 
   return {
     timestamp: new Date(timestamp).toISOString(),
     model,
     project: requireString(input, 'project'),
-    inputTokens: requireInteger(input, 'inputTokens'),
-    outputTokens: requireInteger(input, 'outputTokens'),
+    inputTokens: requireCount(input, 'inputTokens'),
+    outputTokens: requireCount(input, 'outputTokens'),
     cachedInputTokens: cached ?? null,
   }
 }

@@ -38,6 +38,24 @@ describe('parseNewUsageRecord', () => {
     )
   })
 
+  it.each(['inputTokens', 'outputTokens', 'cachedInputTokens'])(
+    'rejects a negative %s (EXP-105)',
+    (field) => {
+      expect(() => parseNewUsageRecord({ ...valid, [field]: -1 }, pricing)).toThrow(
+        `${field} must not be negative`,
+      )
+    },
+  )
+
+  it('accepts zero token counts (EXP-105)', () => {
+    const zero = { ...valid, inputTokens: 0, outputTokens: 0, cachedInputTokens: 0 }
+    expect(parseNewUsageRecord(zero, pricing)).toMatchObject({
+      inputTokens: 0,
+      outputTokens: 0,
+      cachedInputTokens: 0,
+    })
+  })
+
   it('rejects an invalid timestamp', () => {
     expect(() => parseNewUsageRecord({ ...valid, timestamp: 'yesterday' }, pricing)).toThrow(
       'timestamp must be an ISO 8601 date',
