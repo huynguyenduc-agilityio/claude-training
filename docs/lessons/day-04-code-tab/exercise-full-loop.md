@@ -55,4 +55,8 @@ commit, push, MR).
   price on the day of the change.
 - A data-shape change can force edits to existing tests. Stating it in the plan and getting
   approval kept the "do not edit tests to make them pass" rule intact.
-- Still to do: steer with at least one hunk comment (d4-10).
+- Steering with a hunk comment (d4-10): on MR !4, line 28 of `pricing.ts`, I commented that
+  `findLast` assumes periods are sorted oldest first. Claude answered with a failing test (a
+  reversed `pricing.json` picked the old price on 2026-10-01) and a fix that sorts periods in
+  `loadPricing` (87f693a, ef1bebf), then replied on the thread. A comment on one line is more
+  precise than a paragraph in chat: it points at the exact code and becomes the review record.
