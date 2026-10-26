@@ -51,3 +51,6 @@ export const fetchSummary = (month: string) =>
 
 export const fetchUsage = (month: string) =>
   getJson<MonthlyUsage>(`/api/usage?month=${encodeURIComponent(month)}`)
+
+export const usageCsvUrl = (month: string) =>
+  `/api/usage/export.csv?month=${encodeURIComponent(month)}`

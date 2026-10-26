@@ -1,9 +1,18 @@
-import type { MonthlyUsage } from '../../shared/api.ts'
+import { type MonthlyUsage, usageCsvUrl } from '../../shared/api.ts'
 import { formatDateTime, formatTokens, formatUsd } from '../../shared/format.ts'
 
 export const RecordsTable = ({ usage }: { usage: MonthlyUsage }) => (
   <section className="panel">
-    <h2>Usage records ({usage.items.length})</h2>
+    <div className="panel-head">
+      <h2>Usage records ({usage.items.length})</h2>
+      <button
+        type="button"
+        disabled={usage.items.length === 0}
+        onClick={() => window.location.assign(usageCsvUrl(usage.month))}
+      >
+        Export CSV
+      </button>
+    </div>
     <div className="scroll">
       <table>
         <thead>
