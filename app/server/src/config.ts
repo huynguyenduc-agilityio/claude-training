@@ -3,6 +3,7 @@ export interface AppConfig {
   dbPath: string
   timeZone: string
   monthlyBudgetUsd: number
+  budgetAlertWebhookUrl?: string
 }
 
 const toNumber = (value: string | undefined, fallback: number, name: string): number => {
@@ -17,4 +18,5 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => (
   dbPath: env.DB_PATH || 'data/usage.db',
   timeZone: env.APP_TIMEZONE || 'Asia/Ho_Chi_Minh',
   monthlyBudgetUsd: toNumber(env.MONTHLY_BUDGET_USD, 30, 'MONTHLY_BUDGET_USD'),
+  budgetAlertWebhookUrl: env.BUDGET_ALERT_WEBHOOK_URL || undefined,
 })

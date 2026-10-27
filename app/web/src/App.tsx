@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BreakdownTable } from './features/summary/BreakdownTable.tsx'
+import { BudgetBanner } from './features/summary/BudgetBanner.tsx'
 import { SummaryCards } from './features/summary/SummaryCards.tsx'
 import { RecordsTable } from './features/usage/RecordsTable.tsx'
 import { fetchSummary, fetchUsage, type MonthlySummary, type MonthlyUsage } from './shared/api.ts'
@@ -47,6 +48,7 @@ export const App = () => {
       {state.status === 'error' && <p className="error">Could not load data: {state.message}</p>}
       {state.status === 'ready' && (
         <>
+          {state.summary.isCurrentMonth && <BudgetBanner budget={state.summary.budget} />}
           <SummaryCards summary={state.summary} />
           <div className="grid">
             <BreakdownTable title="By model" rows={state.summary.byModel} />
