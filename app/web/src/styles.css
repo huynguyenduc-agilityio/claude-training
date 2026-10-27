@@ -68,6 +68,13 @@ input {
   min-width: 0;
 }
 
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
 .big {
   margin: 0;
   font-size: 1.75rem;

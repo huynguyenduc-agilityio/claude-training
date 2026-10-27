@@ -3,6 +3,7 @@ import type { AppConfig } from '../../config.ts'
 import { ValidationError } from '../../shared/errors.ts'
 import { currentMonthKey, isMonthKey } from '../../shared/time.ts'
 import type { PriceTable } from '../pricing/pricing.ts'
+import { toUsageCsv } from './usage.csv.ts'
 import { listMonth } from './usage.query.ts'
 import type { UsageRepository } from './usage.repository.ts'
 import { parseNewUsageRecord } from './usage.validation.ts'
@@ -27,6 +28,14 @@ export const createUsageRouter = ({ repository, pricing, config }: Deps): Router
   router.get('/', (req, res) => {
     const month = readMonth(req.query.month, config.timeZone)
     res.json(listMonth(repository.listAll(), month, config.timeZone, pricing))
+  })
+
+  router.get('/export.csv', (req, res) => {
+    const month = readMonth(req.query.month, config.timeZone)
+    const usage = listMonth(repository.listAll(), month, config.timeZone, pricing)
+    res.type('text/csv; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="usage-${month}.csv"`)
+    res.send(toUsageCsv(usage, config.timeZone))
   })
 
   router.post('/', (req, res) => {
