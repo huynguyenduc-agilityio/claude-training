@@ -12,4 +12,5 @@ app/server/data/*.db-*
 .vscode/*
 !.vscode/extensions.json
 .idea/
+.claude/worktrees/
 .DS_Store

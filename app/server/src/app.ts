@@ -1,5 +1,6 @@
 import express, { type ErrorRequestHandler } from 'express'
 import type { AppConfig } from './config.ts'
+import { createBudgetAlert, type NotifyBudget } from './features/budget/budget.alert.ts'
 import type { PriceTable } from './features/pricing/pricing.ts'
 import { createSummaryRouter } from './features/summary/summary.routes.ts'
 import type { UsageRepository } from './features/usage/usage.repository.ts'
@@ -10,6 +11,7 @@ interface Deps {
   repository: UsageRepository
   pricing: PriceTable
   config: AppConfig
+  notifyBudget?: NotifyBudget
 }
 
 const handleErrors: ErrorRequestHandler = (error, _req, res, _next) => {
@@ -31,7 +33,9 @@ export const createApp = (deps: Deps) => {
   app.get('/api/models', (_req, res) => {
     res.json(Object.keys(deps.pricing))
   })
-  app.use('/api/usage', createUsageRouter(deps))
+  const budgetAlert = createBudgetAlert({ ...deps, notify: deps.notifyBudget ?? (() => {}) })
+
+  app.use('/api/usage', createUsageRouter({ ...deps, budgetAlert }))
   app.use('/api/summary', createSummaryRouter(deps))
 
   app.use(handleErrors)

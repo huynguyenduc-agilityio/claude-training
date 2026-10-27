@@ -2,6 +2,7 @@ import { Router } from 'express'
 import type { AppConfig } from '../../config.ts'
 import { ValidationError } from '../../shared/errors.ts'
 import { currentMonthKey, isMonthKey } from '../../shared/time.ts'
+import type { createBudgetAlert } from '../budget/budget.alert.ts'
 import type { PriceTable } from '../pricing/pricing.ts'
 import { toUsageCsv } from './usage.csv.ts'
 import { listMonth } from './usage.query.ts'
@@ -12,6 +13,7 @@ interface Deps {
   repository: UsageRepository
   pricing: PriceTable
   config: AppConfig
+  budgetAlert: ReturnType<typeof createBudgetAlert>
 }
 
 export const readMonth = (value: unknown, timeZone: string): string => {
@@ -22,7 +24,7 @@ export const readMonth = (value: unknown, timeZone: string): string => {
   return value
 }
 
-export const createUsageRouter = ({ repository, pricing, config }: Deps): Router => {
+export const createUsageRouter = ({ repository, pricing, config, budgetAlert }: Deps): Router => {
   const router = Router()
 
   router.get('/', (req, res) => {
@@ -39,7 +41,9 @@ export const createUsageRouter = ({ repository, pricing, config }: Deps): Router
   })
 
   router.post('/', (req, res) => {
-    const record = repository.insert(parseNewUsageRecord(req.body, pricing))
+    const record = budgetAlert.track(() =>
+      repository.insert(parseNewUsageRecord(req.body, pricing)),
+    )
     res.status(201).json(record)
   })
 

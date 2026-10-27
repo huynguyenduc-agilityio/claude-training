@@ -104,6 +104,25 @@ input {
   background: var(--exceeded);
 }
 
+.banner {
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid;
+  font-weight: 600;
+}
+
+.banner-warning {
+  color: var(--warning);
+  border-color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 10%, var(--panel));
+}
+
+.banner-exceeded {
+  color: var(--exceeded);
+  border-color: var(--exceeded);
+  background: color-mix(in srgb, var(--exceeded) 10%, var(--panel));
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

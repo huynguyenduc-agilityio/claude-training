@@ -18,6 +18,7 @@ export interface MonthlySummary {
   byModel: Breakdown[]
   byProject: Breakdown[]
   budget: BudgetStatus
+  isCurrentMonth: boolean
 }
 
 export interface PricedUsageRecord {

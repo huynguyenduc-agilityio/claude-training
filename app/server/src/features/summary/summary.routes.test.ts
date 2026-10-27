@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createApp } from '../../app.ts'
 import type { AppConfig } from '../../config.ts'
 import { openDatabase } from '../../shared/db.ts'
+import { currentMonthKey } from '../../shared/time.ts'
 import { createUsageRepository } from '../usage/usage.repository.ts'
 
 const pricing = {
@@ -62,5 +63,17 @@ describe('GET /api/summary', () => {
     expect(summary.recordCount).toBe(usage.items.length)
     expect(summary.budget.spent).toBe(usage.totalCost)
     expect(summary.budget.ratio).toBe(usage.totalCost / config.monthlyBudgetUsd)
+  })
+
+  it('flags the current month as isCurrentMonth', async () => {
+    const summary = await get(`/api/summary?month=${currentMonthKey(config.timeZone)}`)
+
+    expect(summary.isCurrentMonth).toBe(true)
+  })
+
+  it('does not flag another month as isCurrentMonth', async () => {
+    const summary = await get('/api/summary?month=2026-09')
+
+    expect(summary.isCurrentMonth).toBe(false)
   })
 })
