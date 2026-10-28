@@ -11,7 +11,7 @@ Tickets for the AI Usage & Cost Tracker. One file per ticket, named `EXP-1XX.md`
 | [EXP-105](EXP-105.md) | Bug | API accepts negative token counts | Done |
 | [EXP-106](EXP-106.md) | Bug | A token count above the safe integer range breaks every API call | Open |
 | [EXP-107](EXP-107.md) | Bug | Model names like "constructor" are accepted and break the month | Open |
-| [EXP-108](EXP-108.md) | Bug | Cached input tokens above input tokens give a negative cost | Open |
+| [EXP-108](EXP-108.md) | Bug | Cached input tokens above input tokens give a negative cost | Done |
 
 ## Template
 
