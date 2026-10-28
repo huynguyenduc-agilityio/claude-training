@@ -17,14 +17,21 @@ Checklist to run before opening or merging a GitLab merge request for a ticket. 
 
 ## Steps
 
-0. **Resolve the ticket id.** Use `$ARGUMENTS` if given. Otherwise infer it from the branch name (`git branch --show-current`) or the latest commits (`git log -5 --oneline`). If still unknown, ask the user.
+The branch's changes are the commits since `main` plus any uncommitted work. Read them with
+`git diff --merge-base main` (working tree against the point where the branch left `main`) and
+`git status --short` (new untracked files, which the diff does not show). Checks 2, 3, 6 and 7
+use these, so they work before the first commit too.
+
+0. **Resolve the ticket id.** The argument is `$ARGUMENTS`. If it is empty, infer the id from the branch name (`git branch --show-current`) or the latest commits (`git log -5 --oneline`). If still unknown, ask the user.
 1. **Tests and types.** Run `pnpm test` and `pnpm typecheck`. Both must pass. Show the summary lines.
-2. **Plan matches diff.** `docs/plans/<ticket>-*.md` must exist. Run `git diff main...HEAD --stat` and compare it with the plan's "Files to change" section. List extra files and missing files.
-3. **Tests for the ticket.** A test was added or changed for the ticket. Check `git diff main...HEAD -- '*.test.ts'`: no existing assertion or expected value may be weakened or changed. Changing only a fixture's shape for a new type needs the user's approval, so flag it.
-4. **Commits.** Run `git log main..HEAD --format='%h %s%n%b'`. Every subject follows Conventional Commits with the ticket id, for example `fix(usage): reject negative token counts with 400 (EXP-105)`. No message has AI attribution: no `Co-Authored-By: Claude` trailer, no "Generated with Claude Code" line.
+2. **Plan matches diff.** `docs/plans/<ticket>-*.md` must exist. Run `git diff --merge-base main --stat` and `git status --short`, and compare the files with the plan's "Files to change" section. List extra files and missing files.
+3. **Tests for the ticket.** A test was added or changed for the ticket. Check `git diff --merge-base main -- '*.test.ts'`, and read new untracked `*.test.ts` files: no existing assertion or expected value may be weakened or changed. Changing only a fixture's shape for a new type needs the user's approval, so flag it.
+4. **Commits.** Run `git log main..HEAD --format='%h %s%n%b'`. Every subject follows Conventional Commits with the ticket id, for example `fix(usage): reject negative token counts with 400 (EXP-105)`. No message has AI attribution: no `Co-Authored-By: Claude` trailer, no "Generated with Claude Code" line. If there are no commits yet, mark FAIL with "nothing committed yet" and suggest a subject.
 5. **MR description.** Draft it with the sections What, Why, How tested, Notes for reviewer. No AI attribution. Base it on the ticket in `docs/tickets/<ticket>.md`, the plan and the diff.
-6. **Backlog row.** The row for the ticket in `docs/tickets/README.md` is marked `Done` on this branch (check the diff against main).
-7. **Safety.** No `.env` file was read or changed (`git diff main...HEAD --stat`, `git status`). No dependency was added or changed in any `package.json` or `pnpm-lock.yaml` without approval. Flag any dependency diff for the user.
+6. **Backlog row.** The row for the ticket in `docs/tickets/README.md` is marked `Done` on this branch (`git diff --merge-base main -- docs/tickets/README.md`).
+7. **Safety.** No `.env` file was read or changed (`git diff --merge-base main --stat`, `git status --short`). No dependency was added or changed in any `package.json` or `pnpm-lock.yaml` without approval. Flag any dependency diff for the user.
+
+If some changes are not committed yet, say so under the table and list the files.
 
 ## No-ticket branches
 
