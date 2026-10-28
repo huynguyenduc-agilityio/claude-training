@@ -22,6 +22,15 @@ describe('calculateCost', () => {
     expect(cost).toBeCloseTo(600_000 * 5e-6 + 400_000 * 0.5e-6)
   })
 
+  it('bills only the cached rate when all input tokens are cached (EXP-108)', () => {
+    const cost = calculateCost(
+      { inputTokens: 1_000_000, outputTokens: 0, cachedInputTokens: 1_000_000 },
+      price,
+    )
+
+    expect(cost).toBe(0.5)
+  })
+
   it('treats a missing cached count as no cache use', () => {
     const cost = calculateCost(
       { inputTokens: 2_000, outputTokens: 1_000, cachedInputTokens: null },

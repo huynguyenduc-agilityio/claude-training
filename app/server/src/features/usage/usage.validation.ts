@@ -46,12 +46,20 @@ export const parseNewUsageRecord = (body: unknown, pricing: PriceTable): NewUsag
   }
   if (isInteger(cached)) requireNonNegative(cached, 'cachedInputTokens')
 
+  const project = requireString(input, 'project')
+  const inputTokens = requireCount(input, 'inputTokens')
+  const outputTokens = requireCount(input, 'outputTokens')
+  // Cached tokens are part of the input tokens, so more cached than input gives a negative cost.
+  if (isInteger(cached) && cached > inputTokens) {
+    throw new ValidationError('cachedInputTokens must not exceed inputTokens')
+  }
+
   return {
     timestamp: new Date(timestamp).toISOString(),
     model,
-    project: requireString(input, 'project'),
-    inputTokens: requireCount(input, 'inputTokens'),
-    outputTokens: requireCount(input, 'outputTokens'),
+    project,
+    inputTokens,
+    outputTokens,
     cachedInputTokens: cached ?? null,
   }
 }

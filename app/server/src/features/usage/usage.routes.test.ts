@@ -21,9 +21,9 @@ const config: AppConfig = {
 describe('POST /api/usage', () => {
   let server: ReturnType<ReturnType<typeof createApp>['listen']>
   let baseUrl: string
+  const repository = createUsageRepository(openDatabase(':memory:'))
 
   beforeAll(async () => {
-    const repository = createUsageRepository(openDatabase(':memory:'))
     server = createApp({ repository, pricing, config }).listen(0)
     await new Promise((resolve) => server.once('listening', resolve))
     baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`
@@ -51,6 +51,23 @@ describe('POST /api/usage', () => {
 
     expect(response.status).toBe(400)
     expect(await response.json()).toEqual({ error: 'inputTokens must not be negative' })
+  })
+
+  it('rejects cachedInputTokens above inputTokens with 400 and saves nothing (EXP-108)', async () => {
+    const response = await post({
+      timestamp: '2026-10-15T03:00:00Z',
+      model: 'orion-mini',
+      project: 'support-bot',
+      inputTokens: 100,
+      outputTokens: 0,
+      cachedInputTokens: 1000000,
+    })
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({
+      error: 'cachedInputTokens must not exceed inputTokens',
+    })
+    expect(repository.listAll()).toHaveLength(0)
   })
 })
 

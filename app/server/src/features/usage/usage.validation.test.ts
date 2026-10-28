@@ -56,6 +56,27 @@ describe('parseNewUsageRecord', () => {
     })
   })
 
+  it('rejects cachedInputTokens above inputTokens (EXP-108)', () => {
+    const record = { ...valid, cachedInputTokens: valid.inputTokens + 1 }
+    expect(() => parseNewUsageRecord(record, pricing)).toThrow(
+      'cachedInputTokens must not exceed inputTokens',
+    )
+  })
+
+  it('accepts cachedInputTokens equal to inputTokens (EXP-108)', () => {
+    const record = { ...valid, cachedInputTokens: valid.inputTokens }
+    expect(parseNewUsageRecord(record, pricing)).toMatchObject({
+      inputTokens: 1200,
+      cachedInputTokens: 1200,
+    })
+  })
+
+  it('accepts a null cachedInputTokens (EXP-108)', () => {
+    expect(parseNewUsageRecord({ ...valid, cachedInputTokens: null }, pricing)).toMatchObject({
+      cachedInputTokens: null,
+    })
+  })
+
   it('rejects an invalid timestamp', () => {
     expect(() => parseNewUsageRecord({ ...valid, timestamp: 'yesterday' }, pricing)).toThrow(
       'timestamp must be an ISO 8601 date',
