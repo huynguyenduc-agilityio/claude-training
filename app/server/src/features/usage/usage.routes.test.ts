@@ -69,6 +69,33 @@ describe('POST /api/usage', () => {
     })
     expect(repository.listAll()).toHaveLength(0)
   })
+
+  it('rejects a token count above the safe integer range with 400 and saves nothing (EXP-106)', async () => {
+    const response = await fetch(`${baseUrl}/api/usage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{"timestamp":"2026-10-15T03:00:00Z","model":"orion-mini","project":"support-bot","inputTokens":9007199254740994,"outputTokens":1}',
+    })
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({
+      error: 'inputTokens must not exceed 9007199254740991',
+    })
+    expect(repository.listAll()).toHaveLength(0)
+  })
+
+  it('accepts a token count equal to Number.MAX_SAFE_INTEGER and reads it back (EXP-106)', async () => {
+    const response = await post({
+      timestamp: '2026-10-15T03:00:00Z',
+      model: 'orion-mini',
+      project: 'support-bot',
+      inputTokens: Number.MAX_SAFE_INTEGER,
+      outputTokens: 1,
+    })
+
+    expect(response.status).toBe(201)
+    expect(repository.listAll()).toMatchObject([{ inputTokens: Number.MAX_SAFE_INTEGER }])
+  })
 })
 
 describe('GET /api/usage/export.csv', () => {
