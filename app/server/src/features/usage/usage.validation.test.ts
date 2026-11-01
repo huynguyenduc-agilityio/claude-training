@@ -77,6 +77,31 @@ describe('parseNewUsageRecord', () => {
     })
   })
 
+  it.each(['inputTokens', 'outputTokens', 'cachedInputTokens'])(
+    'rejects %s above Number.MAX_SAFE_INTEGER (EXP-106)',
+    (field) => {
+      // 9007199254740994, the ticket's value, written without an unsafe numeric literal.
+      const unsafe = Number.MAX_SAFE_INTEGER + 3
+      expect(() => parseNewUsageRecord({ ...valid, [field]: unsafe }, pricing)).toThrow(
+        `${field} must not exceed 9007199254740991`,
+      )
+    },
+  )
+
+  it('accepts token counts equal to Number.MAX_SAFE_INTEGER (EXP-106)', () => {
+    const record = {
+      ...valid,
+      inputTokens: Number.MAX_SAFE_INTEGER,
+      outputTokens: Number.MAX_SAFE_INTEGER,
+      cachedInputTokens: Number.MAX_SAFE_INTEGER,
+    }
+    expect(parseNewUsageRecord(record, pricing)).toMatchObject({
+      inputTokens: Number.MAX_SAFE_INTEGER,
+      outputTokens: Number.MAX_SAFE_INTEGER,
+      cachedInputTokens: Number.MAX_SAFE_INTEGER,
+    })
+  })
+
   it('rejects an invalid timestamp', () => {
     expect(() => parseNewUsageRecord({ ...valid, timestamp: 'yesterday' }, pricing)).toThrow(
       'timestamp must be an ISO 8601 date',

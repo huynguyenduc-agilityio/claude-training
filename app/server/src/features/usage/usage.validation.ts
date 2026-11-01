@@ -23,8 +23,16 @@ const requireNonNegative = (value: number, field: string): number => {
   return value
 }
 
+// A larger count cannot be read back from the database (node:sqlite throws a RangeError).
+const requireSafe = (value: number, field: string): number => {
+  if (value > Number.MAX_SAFE_INTEGER) {
+    throw new ValidationError(`${field} must not exceed ${Number.MAX_SAFE_INTEGER}`)
+  }
+  return value
+}
+
 const requireCount = (body: Record<string, unknown>, field: string): number =>
-  requireNonNegative(requireInteger(body, field), field)
+  requireSafe(requireNonNegative(requireInteger(body, field), field), field)
 
 export const parseNewUsageRecord = (body: unknown, pricing: PriceTable): NewUsageRecord => {
   if (typeof body !== 'object' || body === null) {
@@ -44,7 +52,9 @@ export const parseNewUsageRecord = (body: unknown, pricing: PriceTable): NewUsag
   if (cached !== undefined && cached !== null && !isInteger(cached)) {
     throw new ValidationError('cachedInputTokens must be an integer')
   }
-  if (isInteger(cached)) requireNonNegative(cached, 'cachedInputTokens')
+  if (isInteger(cached)) {
+    requireSafe(requireNonNegative(cached, 'cachedInputTokens'), 'cachedInputTokens')
+  }
 
   const project = requireString(input, 'project')
   const inputTokens = requireCount(input, 'inputTokens')
