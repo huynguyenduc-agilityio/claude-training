@@ -84,6 +84,23 @@ describe('POST /api/usage', () => {
     expect(repository.listAll()).toHaveLength(0)
   })
 
+  it.each(['constructor', 'toString', 'hasOwnProperty', '__proto__'])(
+    'rejects model %s with 400 and saves nothing (EXP-107)',
+    async (model) => {
+      const response = await post({
+        timestamp: '2026-10-15T03:00:00Z',
+        model,
+        project: 'support-bot',
+        inputTokens: 10,
+        outputTokens: 1,
+      })
+
+      expect(response.status).toBe(400)
+      expect(await response.json()).toEqual({ error: `Unknown model: ${model}` })
+      expect(repository.listAll()).toHaveLength(0)
+    },
+  )
+
   it('accepts a token count equal to Number.MAX_SAFE_INTEGER and reads it back (EXP-106)', async () => {
     const response = await post({
       timestamp: '2026-10-15T03:00:00Z',

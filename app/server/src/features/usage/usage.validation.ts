@@ -1,5 +1,5 @@
 import { ValidationError } from '../../shared/errors.ts'
-import type { PriceTable } from '../pricing/pricing.ts'
+import { isKnownModel, type PriceTable } from '../pricing/pricing.ts'
 import type { NewUsageRecord } from './usage.ts'
 
 const isInteger = (value: unknown): value is number => Number.isInteger(value)
@@ -46,7 +46,7 @@ export const parseNewUsageRecord = (body: unknown, pricing: PriceTable): NewUsag
   }
 
   const model = requireString(input, 'model')
-  if (!pricing[model]) throw new ValidationError(`Unknown model: ${model}`)
+  if (!isKnownModel(pricing, model)) throw new ValidationError(`Unknown model: ${model}`)
 
   const cached = input.cachedInputTokens
   if (cached !== undefined && cached !== null && !isInteger(cached)) {

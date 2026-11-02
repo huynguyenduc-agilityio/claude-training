@@ -31,9 +31,13 @@ export const loadPricing = (path: string | URL = DEFAULT_PRICING_PATH): PriceTab
   )
 }
 
+/** Own keys only: names every object inherits, like `constructor`, are not models. */
+export const isKnownModel = (table: PriceTable, model: string): boolean =>
+  Object.hasOwn(table, model)
+
 /** The price of `model` at `timestamp`: the last period that started at or before it. */
 export const getPrice = (table: PriceTable, model: string, timestamp: string): ModelPrice => {
-  const periods = table[model]
+  const periods = isKnownModel(table, model) ? table[model] : undefined
   if (!periods) throw new Error(`Unknown model: ${model}`)
   const at = Date.parse(timestamp)
   const price = periods.findLast((period) => !period.from || Date.parse(period.from) <= at)
