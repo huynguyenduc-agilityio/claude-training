@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { loadPricing } from '../pricing/pricing.ts'
 import { parseNewUsageRecord } from './usage.validation.ts'
 
 const pricing = { 'orion-mini': [{ inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 }] }
@@ -24,6 +25,19 @@ describe('parseNewUsageRecord', () => {
     expect(() => parseNewUsageRecord({ ...valid, model: 'gpt-x' }, pricing)).toThrow(
       'Unknown model: gpt-x',
     )
+  })
+
+  it.each(['constructor', 'toString', 'hasOwnProperty', '__proto__'])(
+    'rejects %s, inherited from Object.prototype (EXP-107)',
+    (model) => {
+      expect(() => parseNewUsageRecord({ ...valid, model }, pricing)).toThrow(
+        `Unknown model: ${model}`,
+      )
+    },
+  )
+
+  it.each(Object.keys(loadPricing()))('accepts %s from pricing.json (EXP-107)', (model) => {
+    expect(parseNewUsageRecord({ ...valid, model }, loadPricing())).toMatchObject({ model })
   })
 
   it('rejects a missing project', () => {

@@ -35,6 +35,15 @@ describe('getPrice', () => {
       'Unknown model: gpt-x',
     )
   })
+
+  it.each(['constructor', 'toString', 'hasOwnProperty', '__proto__'])(
+    'throws for %s, inherited from Object.prototype (EXP-107)',
+    (model) => {
+      expect(() => getPrice(table, model, '2026-10-15T12:00:00.000Z')).toThrow(
+        `Unknown model: ${model}`,
+      )
+    },
+  )
 })
 
 describe('loadPricing', () => {
