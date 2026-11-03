@@ -48,6 +48,19 @@ questions: when does the next turn start, and where does the work run.
 - Auto mode and `/goal` complement each other: auto mode skips approval per tool, the goal skips
   prompting per turn.
 
+On EXP-109 the condition was: the tests written first fail before the fix and pass after it,
+`pnpm test` and `pnpm typecheck` pass with their output shown, no existing assertion changed, and the
+work is committed; or stop after 20 turns. The evaluator checked it twice:
+
+| Check | Result | Its reason |
+|---|---|---|
+| First | Not met | `pnpm test` ended with `memory allocation of 95344 bytes failed`, and the code was not committed |
+| Second | Met | 24 failed before the fix, 135 passed after, typecheck exit 0, no removed test lines, commit `bc4aa45` |
+
+The first check is the useful one: a report of "code written" did not pass, and the goal sent the
+session back to finish. The condition worked because each part could be proven by output in the
+conversation.
+
 ## Scheduling: where the work runs
 
 | | Desktop scheduled task | Cloud scheduled task (formerly Routines) | GitHub Actions |
@@ -96,7 +109,7 @@ Three pieces are needed, and `/install-github-app` sets up all of them:
 | `@claude` workflows | [PR #3](https://github.com/huynguyenduc-agilityio/claude-training/pull/3) | Both active, secret set |
 | EXP-107 | [PR #4](https://github.com/huynguyenduc-agilityio/claude-training/pull/4) | 110 tests pass, reviewed, see [exercise-claude-review.md](exercise-claude-review.md) |
 | `morning-briefing` task | Local, weekdays 8:30, read-only prompt | One run, succeeded |
-| `/goal` on a ticket | Not done on EXP-107 | The session's only `/goal` came after the merge, with no condition: `No goal set` |
+| EXP-109, with `/goal` | [PR #6](https://github.com/huynguyenduc-agilityio/claude-training/pull/6) | Goal met on the second check, 135 tests pass |
 
 The hook blocks `npm`, `yarn` and `npx`, reading `.env` files except `.env.example`, force pushes,
 `git commit --no-verify`, and attribution lines. It is string matching, not a security boundary:
@@ -104,10 +117,10 @@ The hook blocks `npm`, `yarn` and `npx`, reading `.env` files except `.env.examp
 
 ### Pitfalls met
 
-- **`/goal` was never set on EXP-107.** Work continued as soon as the plan was approved, so there was
-  no pause to type it, and the ticket merged without it. Only the user can type a slash command, so
-  a plan that relies on one should stop and wait for it. I know the feature from the docs, not from
-  a run.
+- **`/goal` was missed on EXP-107.** Work continued as soon as the plan was approved, so there was no
+  pause to type it, and the ticket merged without it. Only the user can type a slash command, so a
+  plan that relies on one must stop and wait for it. EXP-109 was opened to do the step properly, and
+  its session stopped after plan approval.
 - **The hook blocked my own pull request.** A heredoc body line starting with `npm` looked like a
   command. Heredoc bodies are now treated as data, with tests. Attribution lines inside them are
   still blocked.
