@@ -167,3 +167,51 @@ describe('GET /api/usage/export.csv', () => {
     expect(await response.json()).toEqual({ error: 'month must be YYYY-MM' })
   })
 })
+
+describe('reads with a row that has no price (EXP-109)', () => {
+  let server: ReturnType<ReturnType<typeof createApp>['listen']>
+  let baseUrl: string
+  const repository = createUsageRepository(openDatabase(':memory:'))
+  const row = (model: string, timestamp: string) => ({
+    timestamp,
+    model,
+    project: 'support-bot',
+    inputTokens: 100_000,
+    outputTokens: 20_000,
+    cachedInputTokens: null,
+  })
+
+  beforeAll(async () => {
+    repository.insert(row('orion-mini', '2026-10-10T08:00:00Z'))
+    repository.insert(row('constructor', '2026-10-11T08:00:00Z'))
+    repository.insert(row('removed-model', '2026-10-12T08:00:00Z'))
+    server = createApp({ repository, pricing, config }).listen(0)
+    await new Promise((resolve) => server.once('listening', resolve))
+    baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`
+  })
+
+  afterAll(() => {
+    server.close()
+  })
+
+  it('lists the rows with cost null and leaves them out of the total', async () => {
+    const response = await fetch(`${baseUrl}/api/usage?month=2026-10`)
+
+    expect(response.status).toBe(200)
+    const usage = await response.json()
+    expect(usage.items).toHaveLength(3)
+    expect(usage.items.filter((item: { cost: number | null }) => item.cost === null)).toHaveLength(2)
+    expect(usage.items.find((item: { model: string }) => item.model === 'constructor').cost).toBeNull()
+    expect(usage.items.find((item: { model: string }) => item.model === 'removed-model').cost).toBeNull()
+    expect(usage.totalCost).toBe(0.2)
+  })
+
+  it('exports the rows with an empty cost cell', async () => {
+    const response = await fetch(`${baseUrl}/api/usage/export.csv?month=2026-10`)
+
+    expect(response.status).toBe(200)
+    const lines = (await response.text()).split('\r\n')
+    expect(lines.find((line) => line.includes(',constructor,'))?.endsWith(',')).toBe(true)
+    expect(lines.find((line) => line.includes(',removed-model,'))?.endsWith(',')).toBe(true)
+  })
+})

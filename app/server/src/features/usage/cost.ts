@@ -1,4 +1,4 @@
-import type { ModelPrice } from '../pricing/pricing.ts'
+import { findPrice, type ModelPrice, type PriceTable } from '../pricing/pricing.ts'
 import type { NewUsageRecord } from './usage.ts'
 
 const PER_MILLION = 1_000_000
@@ -15,4 +15,10 @@ export const calculateCost = (record: CostInput, price: ModelPrice): number => {
       record.outputTokens * price.outputPerMTok) /
     PER_MILLION
   )
+}
+
+/** The record's cost, or null when the price table has no price for it. */
+export const costOf = (record: NewUsageRecord, pricing: PriceTable): number | null => {
+  const price = findPrice(pricing, record.model, record.timestamp)
+  return price ? calculateCost(record, price) : null
 }

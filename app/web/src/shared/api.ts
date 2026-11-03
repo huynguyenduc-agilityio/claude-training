@@ -17,6 +17,7 @@ export interface MonthlySummary {
   recordCount: number
   byModel: Breakdown[]
   byProject: Breakdown[]
+  unpricedCount: number
   budget: BudgetStatus
   isCurrentMonth: boolean
 }
@@ -29,7 +30,7 @@ export interface PricedUsageRecord {
   inputTokens: number
   outputTokens: number
   cachedInputTokens: number | null
-  cost: number
+  cost: number | null
 }
 
 export interface MonthlyUsage {

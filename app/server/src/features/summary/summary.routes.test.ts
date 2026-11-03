@@ -77,3 +77,41 @@ describe('GET /api/summary', () => {
     expect(summary.isCurrentMonth).toBe(false)
   })
 })
+
+describe('GET /api/summary with a row that has no price (EXP-109)', () => {
+  let server: ReturnType<ReturnType<typeof createApp>['listen']>
+  let baseUrl: string
+
+  beforeAll(async () => {
+    const repository = createUsageRepository(openDatabase(':memory:'))
+    repository.insert(record('2026-10-15T04:00:00.000Z'))
+    repository.insert({ ...record('2026-10-16T04:00:00.000Z'), model: 'constructor' })
+
+    server = createApp({ repository, pricing, config }).listen(0)
+    await new Promise((resolve) => server.once('listening', resolve))
+    baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`
+  })
+
+  afterAll(() => {
+    server.close()
+  })
+
+  it('answers 200 and counts the row without pricing it', async () => {
+    const response = await fetch(`${baseUrl}/api/summary?month=2026-10`)
+    const summary = await response.json()
+    const usage = await (await fetch(`${baseUrl}/api/usage?month=2026-10`)).json()
+
+    expect(response.status).toBe(200)
+    expect(summary.unpricedCount).toBe(1)
+    expect(summary.recordCount).toBe(2)
+    expect(summary.budget.spent).toBe(usage.totalCost)
+  })
+
+  it('answers unpricedCount 0 for a month without such a row', async () => {
+    const response = await fetch(`${baseUrl}/api/summary?month=2026-09`)
+    const summary = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(summary.unpricedCount).toBe(0)
+  })
+})

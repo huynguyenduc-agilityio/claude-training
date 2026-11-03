@@ -35,7 +35,7 @@ export const RecordsTable = ({ usage }: { usage: MonthlyUsage }) => (
               <td className="num">{formatTokens(item.inputTokens)}</td>
               <td className="num">{formatTokens(item.cachedInputTokens)}</td>
               <td className="num">{formatTokens(item.outputTokens)}</td>
-              <td className="num">{formatUsd(item.cost, 4)}</td>
+              <td className="num">{item.cost === null ? '—' : formatUsd(item.cost, 4)}</td>
             </tr>
           ))}
         </tbody>

@@ -90,3 +90,26 @@ describe('summarizeMonth', () => {
     expect(summarizeMonth(lateNight, '2026-09', 'UTC', pricing).recordCount).toBe(1)
   })
 })
+
+describe('summarizeMonth with a row that has no price (EXP-109)', () => {
+  const records = [
+    make(1, {}),
+    make(2, { model: 'removed-model', project: 'code-review' }),
+  ]
+
+  it('counts the row but leaves it out of the money and the breakdowns', () => {
+    const summary = summarizeMonth(records, '2026-09', 'UTC', pricing)
+
+    expect(summary.recordCount).toBe(2)
+    expect(summary.totalCost).toBe(0.2)
+    expect(summary.byModel).toEqual([{ key: 'orion-mini', cost: 0.2, records: 1 }])
+    expect(summary.byProject).toEqual([{ key: 'support-bot', cost: 0.2, records: 1 }])
+    expect(summary.unpricedCount).toBe(1)
+  })
+
+  it('has no unpricedCount for a month without such a row', () => {
+    const summary = summarizeMonth([make(1, {})], '2026-09', 'UTC', pricing)
+
+    expect(summary.unpricedCount).toBeUndefined()
+  })
+})

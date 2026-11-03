@@ -1,9 +1,9 @@
 import type { AppConfig } from '../../config.ts'
 import { roundCents } from '../../shared/money.ts'
 import { currentMonthKey, toMonthKey } from '../../shared/time.ts'
-import { getPrice, type PriceTable } from '../pricing/pricing.ts'
+import type { PriceTable } from '../pricing/pricing.ts'
 import { summarizeMonth } from '../summary/summary.ts'
-import { calculateCost } from '../usage/cost.ts'
+import { costOf } from '../usage/cost.ts'
 import type { NewUsageRecord } from '../usage/usage.ts'
 import type { UsageRepository } from '../usage/usage.repository.ts'
 import { budgetStatus, type BudgetStatus } from './budget.ts'
@@ -76,7 +76,9 @@ export const createBudgetAlert = ({ repository, pricing, config, notify }: Alert
       const record = insert()
       if (toMonthKey(record.timestamp, config.timeZone) !== month) return record
 
-      const cost = calculateCost(record, getPrice(pricing, record.model, record.timestamp))
+      const cost = costOf(record, pricing)
+      if (cost === null) return record
+
       const after = budgetStatus(roundCents(before.spent + cost), config.monthlyBudgetUsd)
       if (crossesThreshold(before, after)) notify(month, after)
       return record

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BreakdownTable } from './features/summary/BreakdownTable.tsx'
 import { BudgetBanner } from './features/summary/BudgetBanner.tsx'
 import { SummaryCards } from './features/summary/SummaryCards.tsx'
+import { UnpricedBanner } from './features/summary/UnpricedBanner.tsx'
 import { RecordsTable } from './features/usage/RecordsTable.tsx'
 import { fetchSummary, fetchUsage, type MonthlySummary, type MonthlyUsage } from './shared/api.ts'
 import { thisMonth } from './shared/format.ts'
@@ -49,6 +50,7 @@ export const App = () => {
       {state.status === 'ready' && (
         <>
           {state.summary.isCurrentMonth && <BudgetBanner budget={state.summary.budget} />}
+          <UnpricedBanner count={state.summary.unpricedCount} />
           <SummaryCards summary={state.summary} />
           <div className="grid">
             <BreakdownTable title="By model" rows={state.summary.byModel} />

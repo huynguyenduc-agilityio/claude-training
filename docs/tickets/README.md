@@ -12,6 +12,7 @@ Tickets for the AI Usage & Cost Tracker. One file per ticket, named `EXP-1XX.md`
 | [EXP-106](EXP-106.md) | Bug | A token count above the safe integer range breaks every API call | Done |
 | [EXP-107](EXP-107.md) | Bug | Model names like "constructor" are accepted and break the month | Done |
 | [EXP-108](EXP-108.md) | Bug | Cached input tokens above input tokens give a negative cost | Done |
+| [EXP-109](EXP-109.md) | Bug | One usage row without a price breaks every read of its month | Done |
 
 ## Template
 
