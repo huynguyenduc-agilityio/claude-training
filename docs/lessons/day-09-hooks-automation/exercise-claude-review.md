@@ -35,8 +35,10 @@ Each point was checked against the code before I decided.
 
 ## Decision
 
-No change to EXP-107. Points 1 and 2 are real but outside the ticket; making reads survive a row
-with no price would be a ticket of its own. I did not open one today.
+No change to EXP-107. Points 1 and 2 are real but outside the ticket, so they became a ticket of
+their own: [EXP-109](../../tickets/EXP-109.md), merged in
+[PR #6](https://github.com/huynguyenduc-agilityio/claude-training/pull/6). A month with a row that
+has no price now stays readable. The automatic review of PR #6 also said "No issues found".
 
 ## What I learned
 
