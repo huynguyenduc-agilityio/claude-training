@@ -96,6 +96,7 @@ Three pieces are needed, and `/install-github-app` sets up all of them:
 | `@claude` workflows | [PR #3](https://github.com/huynguyenduc-agilityio/claude-training/pull/3) | Both active, secret set |
 | EXP-107 | [PR #4](https://github.com/huynguyenduc-agilityio/claude-training/pull/4) | 110 tests pass, reviewed, see [exercise-claude-review.md](exercise-claude-review.md) |
 | `morning-briefing` task | Local, weekdays 8:30, read-only prompt | One run, succeeded |
+| `/goal` on a ticket | Not done on EXP-107 | The session's only `/goal` came after the merge, with no condition: `No goal set` |
 
 The hook blocks `npm`, `yarn` and `npx`, reading `.env` files except `.env.example`, force pushes,
 `git commit --no-verify`, and attribution lines. It is string matching, not a security boundary:
@@ -103,6 +104,10 @@ The hook blocks `npm`, `yarn` and `npx`, reading `.env` files except `.env.examp
 
 ### Pitfalls met
 
+- **`/goal` was never set on EXP-107.** Work continued as soon as the plan was approved, so there was
+  no pause to type it, and the ticket merged without it. Only the user can type a slash command, so
+  a plan that relies on one should stop and wait for it. I know the feature from the docs, not from
+  a run.
 - **The hook blocked my own pull request.** A heredoc body line starting with `npm` looked like a
   command. Heredoc bodies are now treated as data, with tests. Attribution lines inside them are
   still blocked.
