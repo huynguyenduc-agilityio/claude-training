@@ -1,6 +1,6 @@
 import { roundCents } from '../../shared/money.ts'
-import { getPrice, type PriceTable } from '../pricing/pricing.ts'
-import { calculateCost } from '../usage/cost.ts'
+import type { PriceTable } from '../pricing/pricing.ts'
+import { costOf } from '../usage/cost.ts'
 import { recordsInMonth } from '../usage/usage.query.ts'
 import type { UsageRecord } from '../usage/usage.ts'
 
@@ -16,6 +16,8 @@ export interface MonthlySummary {
   recordCount: number
   byModel: Breakdown[]
   byProject: Breakdown[]
+  /** Present only when some records have no price. */
+  unpricedCount?: number
 }
 
 const groupCost = (
@@ -42,18 +44,21 @@ export const summarizeMonth = (
   timeZone: string,
   pricing: PriceTable,
 ): MonthlySummary => {
-  const priced = recordsInMonth(records, month, timeZone).map((record) => ({
-    record,
-    cost: calculateCost(record, getPrice(pricing, record.model, record.timestamp)),
-  }))
+  const inMonth = recordsInMonth(records, month, timeZone)
+  const priced = inMonth.flatMap((record) => {
+    const cost = costOf(record, pricing)
+    return cost === null ? [] : [{ record, cost }]
+  })
+  const unpriced = inMonth.length - priced.length
 
   const total = priced.reduce((sum, { cost }) => sum + cost, 0)
 
   return {
     month,
     totalCost: roundCents(total),
-    recordCount: priced.length,
+    recordCount: inMonth.length,
     byModel: groupCost(priced, (record) => record.model),
     byProject: groupCost(priced, (record) => record.project),
+    ...(unpriced > 0 && { unpricedCount: unpriced }),
   }
 }

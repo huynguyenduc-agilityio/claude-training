@@ -1,17 +1,30 @@
 import { roundCents } from '../../shared/money.ts'
 import { toMonthKey } from '../../shared/time.ts'
-import { getPrice, type PriceTable } from '../pricing/pricing.ts'
-import { calculateCost } from './cost.ts'
+import type { PriceTable } from '../pricing/pricing.ts'
+import { costOf } from './cost.ts'
 import type { UsageRecord } from './usage.ts'
 
 export interface PricedUsageRecord extends UsageRecord {
   cost: number
 }
 
+/** A record the price table cannot price, e.g. its model was removed from `pricing.json`. */
+export interface UnpricedUsageRecord extends UsageRecord {
+  cost: null
+}
+
 export interface MonthlyUsage {
   month: string
-  items: PricedUsageRecord[]
+  items: (PricedUsageRecord | UnpricedUsageRecord)[]
   totalCost: number
+}
+
+const priceItem = (
+  record: UsageRecord,
+  pricing: PriceTable,
+): PricedUsageRecord | UnpricedUsageRecord => {
+  const cost = costOf(record, pricing)
+  return cost === null ? { ...record, cost } : { ...record, cost }
 }
 
 /** Records whose timestamp falls in the `YYYY-MM` month as seen from `timeZone`. */
@@ -29,12 +42,9 @@ export const listMonth = (
   pricing: PriceTable,
 ): MonthlyUsage => {
   const items = recordsInMonth(records, month, timeZone)
-    .map((record) => ({
-      ...record,
-      cost: calculateCost(record, getPrice(pricing, record.model, record.timestamp)),
-    }))
+    .map((record) => priceItem(record, pricing))
     .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
 
-  const total = items.reduce((sum, item) => sum + item.cost, 0)
+  const total = items.reduce((sum, item) => sum + (item.cost ?? 0), 0)
   return { month, items, totalCost: roundCents(total) }
 }

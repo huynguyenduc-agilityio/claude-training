@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { getPrice, loadPricing } from './pricing.ts'
+import { findPrice } from './pricing.ts'
 
 const oldPrice = { inputPerMTok: 0.3, outputPerMTok: 2.5, cachedInputPerMTok: 0.03 }
 const newPrice = { inputPerMTok: 0.2, outputPerMTok: 2, cachedInputPerMTok: 0.03 }
@@ -78,5 +79,29 @@ describe('pricing.json', () => {
         cachedInputPerMTok: 0.1,
       })
     }
+  })
+})
+
+describe('findPrice (EXP-109)', () => {
+  it('returns the price of a known model', () => {
+    expect(findPrice(table, 'orion-mini', '2026-10-15T12:00:00.000Z')).toMatchObject({
+      inputPerMTok: 1,
+      outputPerMTok: 5,
+      cachedInputPerMTok: 0.1,
+    })
+  })
+
+  it('returns undefined for an unknown model', () => {
+    expect(findPrice(table, 'gpt-x', '2026-10-15T12:00:00.000Z')).toBeUndefined()
+  })
+
+  it('returns undefined for a name inherited from Object.prototype', () => {
+    expect(findPrice(table, 'constructor', '2026-10-15T12:00:00.000Z')).toBeUndefined()
+  })
+
+  it('returns undefined for a timestamp before the first period', () => {
+    const later = { 'starts-later': [{ from: '2026-10-01T00:00:00Z', ...newPrice }] }
+
+    expect(findPrice(later, 'starts-later', '2026-09-30T23:59:59.000Z')).toBeUndefined()
   })
 })

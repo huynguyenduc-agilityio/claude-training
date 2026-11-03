@@ -32,7 +32,7 @@ export const toUsageCsv = (usage: MonthlyUsage, timeZone: string): string => {
       String(item.inputTokens),
       item.cachedInputTokens === null ? '' : String(item.cachedInputTokens),
       String(item.outputTokens),
-      item.cost.toFixed(8),
+      item.cost === null ? '' : item.cost.toFixed(8),
     ].join(','),
   )
   return BOM + [HEADER.join(','), ...rows].map((line) => line + LINE_BREAK).join('')

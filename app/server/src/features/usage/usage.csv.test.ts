@@ -146,3 +146,55 @@ describe('toUsageCsv', () => {
     expect(roundCents(costs.reduce((sum, cost) => sum + cost, 0))).toBe(usage.totalCost)
   })
 })
+
+describe('toUsageCsv with a row that has no price (EXP-109)', () => {
+  it('writes an empty cost cell for cost null', () => {
+    const usage: MonthlyUsage = {
+      month: '2026-10',
+      items: [{ ...item(), cost: null }],
+      totalCost: 0,
+    }
+
+    expect(linesOf(toUsageCsv(usage, 'UTC'))[1]).toBe(
+      '2026-09-30T18:00:00+00:00,support-bot,orion-mini,1000,400,200,',
+    )
+  })
+
+  it('keeps the row and the cost column still sums to the total', () => {
+    const pricing: PriceTable = {
+      'orion-mini': [{ inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 }],
+    }
+    const records: UsageRecord[] = [
+      {
+        id: 1,
+        timestamp: '2026-09-10T08:00:00Z',
+        model: 'orion-mini',
+        project: 'support-bot',
+        inputTokens: 100_000,
+        outputTokens: 20_000,
+        cachedInputTokens: null,
+      },
+      {
+        id: 2,
+        timestamp: '2026-09-20T08:00:00Z',
+        model: 'removed-model',
+        project: 'support-bot',
+        inputTokens: 100_000,
+        outputTokens: 20_000,
+        cachedInputTokens: null,
+      },
+    ]
+
+    const usage = listMonth(records, '2026-09', 'UTC', pricing)
+    const lines = linesOf(toUsageCsv(usage, 'UTC'))
+    const costs = lines
+      .slice(1)
+      .map((line) => line.split(',').at(-1))
+      .filter((cell) => cell !== '')
+      .map(Number)
+
+    expect(lines).toHaveLength(3)
+    expect(usage.totalCost).toBeGreaterThan(0)
+    expect(roundCents(costs.reduce((sum, cost) => sum + cost, 0))).toBe(usage.totalCost)
+  })
+})

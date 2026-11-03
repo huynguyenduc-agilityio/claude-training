@@ -67,3 +67,47 @@ describe('listMonth', () => {
     })
   })
 })
+
+describe('listMonth with a row that has no price (EXP-109)', () => {
+  const priced = make(1, '2026-09-10T08:00:00.000Z')
+  const unknown: UsageRecord = { ...make(2, '2026-09-20T08:00:00.000Z'), model: 'removed-model' }
+
+  it('keeps both rows, newest first', () => {
+    const result = listMonth([priced, unknown], '2026-09', 'Asia/Ho_Chi_Minh', pricing)
+
+    expect(result.items.map((item) => item.id)).toEqual([2, 1])
+  })
+
+  it('flags the row with cost null and leaves it out of the total', () => {
+    const result = listMonth([priced, unknown], '2026-09', 'Asia/Ho_Chi_Minh', pricing)
+
+    expect(result.items[0]?.cost).toBeNull()
+    expect(result.items[1]?.cost).toBeCloseTo(0.2)
+    expect(result.totalCost).toBe(0.2)
+  })
+
+  it.each(['constructor', 'removed-model'])('does not throw for model %s', (model) => {
+    const result = listMonth(
+      [{ ...priced, model }],
+      '2026-09',
+      'Asia/Ho_Chi_Minh',
+      pricing,
+    )
+
+    expect(result.items[0]?.cost).toBeNull()
+    expect(result.totalCost).toBe(0)
+  })
+
+  it('does not throw for a timestamp before the first period', () => {
+    const later = {
+      'orion-mini': [
+        { from: '2026-10-01T00:00:00Z', inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 },
+      ],
+    }
+
+    const result = listMonth([priced], '2026-09', 'Asia/Ho_Chi_Minh', later)
+
+    expect(result.items[0]?.cost).toBeNull()
+    expect(result.totalCost).toBe(0)
+  })
+})

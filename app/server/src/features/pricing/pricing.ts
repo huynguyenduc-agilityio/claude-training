@@ -20,7 +20,7 @@ const DEFAULT_PRICING_PATH = new URL('../../../data/pricing.json', import.meta.u
 const startOf = (period: PricePeriod): number =>
   period.from ? Date.parse(period.from) : Number.NEGATIVE_INFINITY
 
-/** Reads the price table and sorts each model's periods oldest first, as `getPrice` expects. */
+/** Reads the price table and sorts each model's periods oldest first, as `findPrice` expects. */
 export const loadPricing = (path: string | URL = DEFAULT_PRICING_PATH): PriceTable => {
   const table = JSON.parse(readFileSync(path, 'utf8')) as PriceTable
   return Object.fromEntries(
@@ -35,12 +35,21 @@ export const loadPricing = (path: string | URL = DEFAULT_PRICING_PATH): PriceTab
 export const isKnownModel = (table: PriceTable, model: string): boolean =>
   Object.hasOwn(table, model)
 
-/** The price of `model` at `timestamp`: the last period that started at or before it. */
-export const getPrice = (table: PriceTable, model: string, timestamp: string): ModelPrice => {
+/** The price of `model` at `timestamp`: the last period that started at or before it, if any. */
+export const findPrice = (
+  table: PriceTable,
+  model: string,
+  timestamp: string,
+): ModelPrice | undefined => {
   const periods = isKnownModel(table, model) ? table[model] : undefined
-  if (!periods) throw new Error(`Unknown model: ${model}`)
   const at = Date.parse(timestamp)
-  const price = periods.findLast((period) => !period.from || Date.parse(period.from) <= at)
+  return periods?.findLast((period) => !period.from || Date.parse(period.from) <= at)
+}
+
+/** Like `findPrice`, for callers that treat a missing price as an error. */
+export const getPrice = (table: PriceTable, model: string, timestamp: string): ModelPrice => {
+  if (!isKnownModel(table, model)) throw new Error(`Unknown model: ${model}`)
+  const price = findPrice(table, model, timestamp)
   if (!price) throw new Error(`No price for ${model} at ${timestamp}`)
   return price
 }

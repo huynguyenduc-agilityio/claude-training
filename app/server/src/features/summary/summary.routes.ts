@@ -21,6 +21,7 @@ export const createSummaryRouter = ({ repository, pricing, config }: Deps): Rout
     const summary = summarizeMonth(repository.listAll(), month, config.timeZone, pricing)
     res.json({
       ...summary,
+      unpricedCount: summary.unpricedCount ?? 0,
       budget: budgetStatus(summary.totalCost, config.monthlyBudgetUsd),
       isCurrentMonth: month === currentMonthKey(config.timeZone),
     })
