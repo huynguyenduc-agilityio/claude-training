@@ -122,11 +122,20 @@ count against `git show --stat`. `/security-review` also found nothing on this c
 
 ## review-checklist
 
-The skill was tried once, with `claude -p "/review-checklist 54bb913" --model sonnet`, on the seeded
-commit. It reported all five areas and found 4 of the 6 bugs: SQL injection, `Math.floor`, latest
-price, and time zone. It missed the rounded total and the date validation. The run's reply says the
-skill tool call failed and it followed `SKILL.md` by hand, so that run does not prove the slash
-command works. Model and effort differ from the runs above, so 4 of 6 is not a fair comparison.
+The skill was tried twice on the seeded commit.
+
+| Run | Skill loaded | Result | Independent |
+|---|---|---|---|
+| `claude -p "/review-checklist 54bb913" --model sonnet` | No: the reply says the skill tool call failed and it followed `SKILL.md` by hand. Cause unknown | 4 of 6 bugs; missed the rounded total and the date validation | Probably: its prompt named no notes, but what it read was not checked |
+| A new Desktop session, with `/review-checklist 54bb913` in the brief it was started with | Yes: it called the Skill tool, the file loaded, and `54bb913` reached the skill as its argument | 10 comments | No: it read `code-review-high-findings.md` in the shared notes first |
+
+The second run shows the skill loads and runs in a real session. The error from the first run did not
+come back. A person typing the command in the chat box was not tried.
+
+Neither run measures how good the skill is. The first has a different model and effort from the runs
+above, so 4 of 6 is not a fair comparison. The second had already seen a list of the bugs, so its 10
+comments do not count at all. Shared notes reach a new session as well, so keep answers out of them
+when testing a reviewer.
 
 ## False positives for the retro
 
