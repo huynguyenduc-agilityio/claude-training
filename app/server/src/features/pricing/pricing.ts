@@ -24,6 +24,16 @@ const PRICE_FIELDS = ['inputPerMTok', 'outputPerMTok', 'cachedInputPerMTok'] as 
 
 const ISO_UTC_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
 
+/** `Date.parse` rolls `02-30` over to March, so the date must survive the round trip. */
+const isRealUtcInstant = (from: string): boolean => {
+  const time = Date.parse(from)
+  return (
+    ISO_UTC_INSTANT.test(from) &&
+    !Number.isNaN(time) &&
+    new Date(time).toISOString().slice(0, 10) === from.slice(0, 10)
+  )
+}
+
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
@@ -33,6 +43,7 @@ const assertValidPriceTable: (table: unknown) => asserts table is PriceTable = (
     throw new Error(`Invalid price table: ${where ? `${where}: ` : ''}${reason}`)
   }
   if (!isObject(table)) return fail('', 'must be an object')
+  if (Object.keys(table).length === 0) return fail('', 'must have at least one model')
   for (const [model, periods] of Object.entries(table)) {
     if (!Array.isArray(periods) || periods.length === 0) {
       return fail(model, 'must be a non-empty list of periods')
@@ -47,10 +58,7 @@ const assertValidPriceTable: (table: unknown) => asserts table is PriceTable = (
         }
       }
       const { from } = period
-      if (
-        from !== undefined &&
-        (typeof from !== 'string' || !ISO_UTC_INSTANT.test(from) || Number.isNaN(Date.parse(from)))
-      ) {
+      if (from !== undefined && (typeof from !== 'string' || !isRealUtcInstant(from))) {
         fail(where, 'from must be an ISO 8601 UTC instant, such as 2026-10-01T00:00:00Z')
       }
     })

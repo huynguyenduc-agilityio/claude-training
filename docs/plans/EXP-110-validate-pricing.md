@@ -12,7 +12,8 @@ Decisions:
 - A plain `Error`, not `ValidationError`. `ValidationError` means a `400` for a bad API request; this
   is a broken server file.
 - Stop at the first problem. The file is small and edited by hand.
-- `from` must match `YYYY-MM-DDTHH:mm:ssZ`, with optional milliseconds, and parse to a real instant.
+- `from` must match `YYYY-MM-DDTHH:mm:ssZ`, with optional fractional seconds, and be a real instant:
+  `Date.parse` rolls `2026-02-30` over to March, so the date part must survive a round trip.
   `CLAUDE.md` documents `from` as ISO 8601 UTC. `Date.parse` alone is not enough: it also accepts
   `Oct 1 2026` and `2026-10-01T00:00:00`, which read as local time.
 - A price of `0` is valid, for a free model. Extra fields in a period are ignored.
@@ -20,9 +21,9 @@ Decisions:
 - Out of scope: two periods with the same start, a schema library (no new dependency), and rows
   already priced with a wrong value.
 
-Not checked yet: whether `Date.parse` rejects a day that does not exist, such as
-`2026-02-30T00:00:00Z`. Step 1 includes a test for it. If the runtime accepts that value, I report
-it and ask before adding code for it.
+Checked after the first commit: the runtime accepts `2026-02-30T00:00:00Z`. `/code-review` raised
+it, the owner chose to fix it, and step 10 adds the check and its test. The same review added the
+rule that a table with no models is invalid.
 
 ## Steps
 

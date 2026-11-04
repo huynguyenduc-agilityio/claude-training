@@ -1,7 +1,7 @@
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { getPrice, loadPricing } from './pricing.ts'
 import { findPrice } from './pricing.ts'
 
@@ -57,8 +57,16 @@ describe('loadPricing', () => {
     expect(getPrice(pricing, 'lyra-flash', '2026-10-01T00:00:00.000Z')).toMatchObject(newPrice)
   })
 
+  let dir: string
+  beforeAll(() => {
+    dir = mkdtempSync(join(tmpdir(), 'pricing-'))
+  })
+  afterAll(() => {
+    rmSync(dir, { recursive: true, force: true })
+  })
+
   const loadFrom = (content: unknown) => {
-    const path = join(mkdtempSync(join(tmpdir(), 'pricing-')), 'pricing.json')
+    const path = join(dir, 'pricing.json')
     writeFileSync(path, JSON.stringify(content))
     return loadPricing(path)
   }
@@ -124,9 +132,29 @@ describe('loadPricing', () => {
       ['without a Z', '2026-10-01T00:00:00'],
       ['a date only', '2026-10-01'],
       ['a number', 1790812800000],
+      ['a day that does not exist', '2026-02-30T00:00:00Z'],
+      ['a day past the end of a 30-day month', '2026-04-31T00:00:00Z'],
+      ['the hour 24', '2026-10-01T24:00:00Z'],
+      ['a month that does not exist', '2026-13-01T00:00:00Z'],
     ])('throws when from is %s', (_label, from) => {
       expect(() => loadFrom({ 'lyra-flash': [{ from, ...newPrice }] })).toThrow(
         'Invalid price table: lyra-flash period 1: from must be an ISO 8601 UTC instant, such as 2026-10-01T00:00:00Z',
+      )
+    })
+
+    it('throws when the top level is an object with no models', () => {
+      expect(() => loadFrom({})).toThrow('Invalid price table: must have at least one model')
+    })
+
+    it('throws for an infinite price', () => {
+      const path = join(dir, 'pricing.json')
+      writeFileSync(
+        path,
+        '{"m":[{"inputPerMTok":1e999,"outputPerMTok":1,"cachedInputPerMTok":1}]}',
+      )
+
+      expect(() => loadPricing(path)).toThrow(
+        'Invalid price table: m period 1: inputPerMTok must be a finite number that is not negative',
       )
     })
 
