@@ -1,7 +1,7 @@
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { getPrice, loadPricing } from './pricing.ts'
 import { findPrice } from './pricing.ts'
 
@@ -55,6 +55,152 @@ describe('loadPricing', () => {
 
     expect(getPrice(pricing, 'lyra-flash', '2026-09-30T23:59:59.000Z')).toMatchObject(oldPrice)
     expect(getPrice(pricing, 'lyra-flash', '2026-10-01T00:00:00.000Z')).toMatchObject(newPrice)
+  })
+
+  let dir: string
+  beforeAll(() => {
+    dir = mkdtempSync(join(tmpdir(), 'pricing-'))
+  })
+  afterAll(() => {
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  const loadFrom = (content: unknown) => {
+    const path = join(dir, 'pricing.json')
+    writeFileSync(path, JSON.stringify(content))
+    return loadPricing(path)
+  }
+
+  describe('rejects an invalid price table (EXP-110)', () => {
+    it.each([
+      ['an array', []],
+      ['null', null],
+    ])('throws when the top level is %s', (_label, content) => {
+      expect(() => loadFrom(content)).toThrow('Invalid price table: must be an object')
+    })
+
+    it.each([
+      ['an object', {}],
+      ['a string', 'oops'],
+      ['a number', 3],
+      ['null', null],
+    ])("throws when a model's value is %s", (_label, value) => {
+      expect(() => loadFrom({ 'lyra-flash': value })).toThrow(
+        'Invalid price table: lyra-flash: must be a non-empty list of periods',
+      )
+    })
+
+    it('throws for a model with an empty list of periods', () => {
+      expect(() => loadFrom({ 'lyra-flash': [] })).toThrow(
+        'Invalid price table: lyra-flash: must be a non-empty list of periods',
+      )
+    })
+
+    it.each([
+      ['a string', 'oops'],
+      ['null', null],
+      ['an array', []],
+      ['a number', 3],
+    ])('throws when a period is %s, and names the period number', (_label, period) => {
+      expect(() => loadFrom({ 'lyra-flash': [oldPrice, period] })).toThrow(
+        'Invalid price table: lyra-flash period 2: must be an object',
+      )
+    })
+
+    const badPrices: [string, unknown][] = [
+      ['missing', undefined],
+      ['a string', '1'],
+      ['null', null],
+      ['negative', -0.5],
+    ]
+
+    describe.each(['inputPerMTok', 'outputPerMTok', 'cachedInputPerMTok'])('%s', (field) => {
+      it.each(badPrices)('throws when it is %s', (_label, value) => {
+        expect(() =>
+          loadFrom({
+            'orion-mini': [{ ...oldPrice }, { from: '2026-10-01T00:00:00Z', ...newPrice, [field]: value }],
+          }),
+        ).toThrow(
+          `Invalid price table: orion-mini period 2: ${field} must be a finite number that is not negative`,
+        )
+      })
+    })
+
+    it.each([
+      ['unparseable', 'not-a-date'],
+      ['a date in words', 'Oct 1 2026'],
+      ['without a Z', '2026-10-01T00:00:00'],
+      ['a date only', '2026-10-01'],
+      ['a number', 1790812800000],
+      ['a day that does not exist', '2026-02-30T00:00:00Z'],
+      ['a day past the end of a 30-day month', '2026-04-31T00:00:00Z'],
+      ['the hour 24', '2026-10-01T24:00:00Z'],
+      ['a month that does not exist', '2026-13-01T00:00:00Z'],
+    ])('throws when from is %s', (_label, from) => {
+      expect(() => loadFrom({ 'lyra-flash': [{ from, ...newPrice }] })).toThrow(
+        'Invalid price table: lyra-flash period 1: from must be an ISO 8601 UTC instant, such as 2026-10-01T00:00:00Z',
+      )
+    })
+
+    it('throws when the top level is an object with no models', () => {
+      expect(() => loadFrom({})).toThrow('Invalid price table: must have at least one model')
+    })
+
+    it('throws for an infinite price', () => {
+      const path = join(dir, 'pricing.json')
+      writeFileSync(
+        path,
+        '{"m":[{"inputPerMTok":1e999,"outputPerMTok":1,"cachedInputPerMTok":1}]}',
+      )
+
+      expect(() => loadPricing(path)).toThrow(
+        'Invalid price table: m period 1: inputPerMTok must be a finite number that is not negative',
+      )
+    })
+
+    it('stops at the first problem, in file order', () => {
+      expect(() =>
+        loadFrom({
+          'lyra-flash': [{ ...oldPrice, inputPerMTok: -1 }],
+          'orion-mini': [],
+        }),
+      ).toThrow('Invalid price table: lyra-flash period 1: inputPerMTok')
+    })
+  })
+
+  describe('accepts a valid price table (EXP-110)', () => {
+    it('loads a price of 0', () => {
+      const free = { inputPerMTok: 0, outputPerMTok: 0, cachedInputPerMTok: 0 }
+
+      expect(getPrice(loadFrom({ 'free-model': [free] }), 'free-model', '2026-10-15T12:00:00.000Z'))
+        .toMatchObject(free)
+    })
+
+    it('loads a period without from', () => {
+      expect(() => loadFrom({ 'orion-mini': [oldPrice] })).not.toThrow()
+    })
+
+    it('loads a model whose periods all have from', () => {
+      const pricing = loadFrom({
+        'lyra-flash': [
+          { from: '2026-01-01T00:00:00Z', ...oldPrice },
+          { from: '2026-10-01T00:00:00.500Z', ...newPrice },
+        ],
+      })
+
+      expect(getPrice(pricing, 'lyra-flash', '2026-09-30T23:59:59.000Z')).toMatchObject(oldPrice)
+      expect(getPrice(pricing, 'lyra-flash', '2026-10-01T00:00:01.000Z')).toMatchObject(newPrice)
+    })
+
+    it('ignores extra fields', () => {
+      expect(() =>
+        loadFrom({ 'orion-mini': [{ ...oldPrice, note: 'promo', currency: 'USD' }] }),
+      ).not.toThrow()
+    })
+
+    it('loads the real pricing.json', () => {
+      expect(() => loadPricing()).not.toThrow()
+    })
   })
 })
 
