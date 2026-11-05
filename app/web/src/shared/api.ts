@@ -39,8 +39,16 @@ export interface MonthlyUsage {
   totalCost: number
 }
 
-const getJson = async <T>(path: string): Promise<T> => {
-  const response = await fetch(path)
+export interface NewUsageInput {
+  timestamp: string
+  model: string
+  project: string
+  inputTokens: number | null
+  outputTokens: number | null
+  cachedInputTokens: number | null
+}
+
+const readJson = async <T>(response: Response): Promise<T> => {
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as { error?: string }
     throw new Error(body.error ?? `Request failed: ${response.status}`)
@@ -48,11 +56,24 @@ const getJson = async <T>(path: string): Promise<T> => {
   return (await response.json()) as T
 }
 
+const getJson = async <T>(path: string): Promise<T> => readJson<T>(await fetch(path))
+
 export const fetchSummary = (month: string) =>
   getJson<MonthlySummary>(`/api/summary?month=${encodeURIComponent(month)}`)
 
 export const fetchUsage = (month: string) =>
   getJson<MonthlyUsage>(`/api/usage?month=${encodeURIComponent(month)}`)
+
+export const fetchModels = () => getJson<string[]>('/api/models')
+
+export const createUsage = async (input: NewUsageInput): Promise<void> => {
+  const response = await fetch('/api/usage', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+  await readJson<unknown>(response)
+}
 
 export const usageCsvUrl = (month: string) =>
   `/api/usage/export.csv?month=${encodeURIComponent(month)}`
