@@ -3,6 +3,7 @@ import { BreakdownTable } from './features/summary/BreakdownTable.tsx'
 import { BudgetBanner } from './features/summary/BudgetBanner.tsx'
 import { SummaryCards } from './features/summary/SummaryCards.tsx'
 import { UnpricedBanner } from './features/summary/UnpricedBanner.tsx'
+import { AddUsageForm } from './features/usage/AddUsageForm.tsx'
 import { RecordsTable } from './features/usage/RecordsTable.tsx'
 import { fetchSummary, fetchUsage, type MonthlySummary, type MonthlyUsage } from './shared/api.ts'
 import { thisMonth } from './shared/format.ts'
@@ -15,6 +16,7 @@ type State =
 export const App = () => {
   const [month, setMonth] = useState(thisMonth())
   const [state, setState] = useState<State>({ status: 'loading' })
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -29,7 +31,7 @@ export const App = () => {
     return () => {
       cancelled = true
     }
-  }, [month])
+  }, [month, reloadKey])
 
   return (
     <main className="page">
@@ -44,6 +46,8 @@ export const App = () => {
           />
         </label>
       </header>
+
+      <AddUsageForm onAdded={() => setReloadKey((key) => key + 1)} />
 
       {state.status === 'loading' && <p className="muted">Loading…</p>}
       {state.status === 'error' && <p className="error">Could not load data: {state.message}</p>}
