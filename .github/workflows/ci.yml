@@ -1,0 +1,33 @@
+name: CI
+
+# Runs the server and web test suites and the type check. The GitLab project has no runner,
+# so CI runs on the GitHub mirror; merge requests stay on GitLab.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.17'
+
+      - name: Enable pnpm from packageManager
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test (server and web)
+        run: pnpm test
+
+      - name: Type check
+        run: pnpm typecheck
