@@ -39,6 +39,20 @@ export interface MonthlyUsage {
   totalCost: number
 }
 
+export interface ProjectBudget {
+  project: string
+  budget: number | null
+  spent: number
+  ratio: number | null
+  percent: number | null
+  level: 'none' | 'ok' | 'warning' | 'exceeded'
+}
+
+export interface ProjectBudgets {
+  month: string
+  projects: ProjectBudget[]
+}
+
 export interface NewUsageInput {
   timestamp: string
   model: string
@@ -64,7 +78,9 @@ export const fetchSummary = (month: string) =>
 export const fetchUsage = (month: string) =>
   getJson<MonthlyUsage>(`/api/usage?month=${encodeURIComponent(month)}`)
 
-export const fetchModels = () => getJson<string[]>('/api/models')
+export const fetchProjectBudgets = () => getJson<ProjectBudgets>('/api/project-budgets')
+
+export const fetchModels =() => getJson<string[]>('/api/models')
 
 export const createUsage = async (input: NewUsageInput): Promise<void> => {
   const response = await fetch('/api/usage', {

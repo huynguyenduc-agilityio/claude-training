@@ -9,7 +9,7 @@ Learning notes live in `docs/`. The remote is GitLab: use `glab` and merge reque
 Use `pnpm` only.
 
 - `pnpm dev`: API on http://localhost:4000 and web on http://localhost:5173
-- `pnpm test`: server tests; one file: `pnpm --filter server exec vitest run src/features/usage/cost.test.ts`
+- `pnpm test`: server and web tests; one server file: `pnpm --filter server exec vitest run src/features/usage/cost.test.ts`; one web file: `pnpm --filter web exec vitest run <file>`
 - `pnpm typecheck`: type-check server and web
 - `pnpm seed`: replace the local database with the deterministic sample data
 
