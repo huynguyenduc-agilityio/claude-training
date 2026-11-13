@@ -11,6 +11,10 @@ CREATE TABLE IF NOT EXISTS usage_records (
   input_tokens INTEGER NOT NULL,
   output_tokens INTEGER NOT NULL,
   cached_input_tokens INTEGER
+);
+CREATE TABLE IF NOT EXISTS project_budgets (
+  project TEXT PRIMARY KEY,
+  budget_cents INTEGER NOT NULL
 )`
 
 export const openDatabase = (path: string): DatabaseSync => {
