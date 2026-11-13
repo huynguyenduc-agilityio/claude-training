@@ -39,6 +39,20 @@ export interface MonthlyUsage {
   totalCost: number
 }
 
+export interface ProjectBudget {
+  project: string
+  budget: number | null
+  spent: number
+  ratio: number | null
+  percent: number | null
+  level: 'none' | 'ok' | 'warning' | 'exceeded'
+}
+
+export interface ProjectBudgets {
+  month: string
+  projects: ProjectBudget[]
+}
+
 export interface NewUsageInput {
   timestamp: string
   model: string
@@ -48,11 +62,23 @@ export interface NewUsageInput {
   cachedInputTokens: number | null
 }
 
-const readJson = async <T>(response: Response): Promise<T> => {
-  if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as { error?: string }
-    throw new Error(body.error ?? `Request failed: ${response.status}`)
+export class ApiError extends Error {
+  readonly status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
   }
+}
+
+const failure = async (response: Response): Promise<ApiError> => {
+  const body = (await response.json().catch(() => ({}))) as { error?: string }
+  return new ApiError(body.error ?? `Request failed: ${response.status}`, response.status)
+}
+
+const readJson = async <T>(response: Response): Promise<T> => {
+  if (!response.ok) throw await failure(response)
   return (await response.json()) as T
 }
 
@@ -64,7 +90,29 @@ export const fetchSummary = (month: string) =>
 export const fetchUsage = (month: string) =>
   getJson<MonthlyUsage>(`/api/usage?month=${encodeURIComponent(month)}`)
 
-export const fetchModels = () => getJson<string[]>('/api/models')
+export const fetchProjectBudgets = () => getJson<ProjectBudgets>('/api/project-budgets')
+
+const projectBudgetPath = (project: string) => `/api/project-budgets/${encodeURIComponent(project)}`
+
+export const saveProjectBudget = async (
+  project: string,
+  budgetUsd: number | null,
+): Promise<void> => {
+  const response = await fetch(projectBudgetPath(project), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ budgetUsd }),
+  })
+  await readJson<unknown>(response)
+}
+
+// DELETE answers 204 with no body, so there is nothing to parse on success.
+export const deleteProjectBudget = async (project: string): Promise<void> => {
+  const response = await fetch(projectBudgetPath(project), { method: 'DELETE' })
+  if (!response.ok) throw await failure(response)
+}
+
+export const fetchModels =() => getJson<string[]>('/api/models')
 
 export const createUsage = async (input: NewUsageInput): Promise<void> => {
   const response = await fetch('/api/usage', {

@@ -143,8 +143,10 @@ other in the same session.
    `Code-Review` and `code-review` are two projects. Owner: client, if it happens.
 3. **Unpriced records are not counted.** A project whose records have no price looks under budget.
    This matches the company-wide total today. Owner: client.
-4. **No automated check for the web part.** `app/web` has no test runner. Adding Playwright is a new
-   dependency and needs approval before Day 13. Owner: lead.
+4. **Automated checks for the web part.** `app/web` had no test runner. The lead approved Vitest,
+   jsdom and Testing Library on Day 13 and EXP-113 adds them; the banner and form rows of the test
+   matrix are automated tests with `fetch` stubbed. A real browser is still used for a visual check.
+   Owner: lead.
 5. **BA proposals:** banner wording and order, the form's position and texts, at most two decimals,
    the largest amount. The client approved them on 2026-11-11 with the answers to the
    zero-questions rounds in [zero-questions.md](zero-questions.md). Owner: client.

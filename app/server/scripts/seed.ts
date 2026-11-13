@@ -1,4 +1,5 @@
 import { loadConfig } from '../src/config.ts'
+import { createProjectBudgetRepository } from '../src/features/budget/project-budget.repository.ts'
 import { createUsageRepository } from '../src/features/usage/usage.repository.ts'
 import type { NewUsageRecord } from '../src/features/usage/usage.ts'
 import { openDatabase } from '../src/shared/db.ts'
@@ -80,8 +81,11 @@ for (let day = START; day <= END; day += DAY) {
 }
 
 const config = loadConfig()
-const repository = createUsageRepository(openDatabase(config.dbPath))
+const db = openDatabase(config.dbPath)
+const repository = createUsageRepository(db)
 repository.clear()
+// Budgets are not part of the sample data, so every machine starts without any
+createProjectBudgetRepository(db).clear()
 for (const record of records) repository.insert(record)
 
 console.log(`Seeded ${records.length} usage records into ${config.dbPath}`)

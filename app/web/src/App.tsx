@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react'
+import { ProjectBudgetBanners } from './features/budget/ProjectBudgetBanners.tsx'
+import { ProjectBudgetsSection } from './features/budget/ProjectBudgetsSection.tsx'
+import { useProjectBudgets } from './features/budget/useProjectBudgets.ts'
 import { BreakdownTable } from './features/summary/BreakdownTable.tsx'
 import { BudgetBanner } from './features/summary/BudgetBanner.tsx'
 import { SummaryCards } from './features/summary/SummaryCards.tsx'
@@ -33,6 +36,8 @@ export const App = () => {
     }
   }, [month, reloadKey])
 
+  const budgets = useProjectBudgets(reloadKey)
+
   return (
     <main className="page">
       <header className="header">
@@ -49,11 +54,18 @@ export const App = () => {
 
       <AddUsageForm onAdded={() => setReloadKey((key) => key + 1)} />
 
+      <ProjectBudgetsSection section={budgets.section} month={month} refresh={budgets.refresh} />
+
       {state.status === 'loading' && <p className="muted">Loading…</p>}
       {state.status === 'error' && <p className="error">Could not load data: {state.message}</p>}
       {state.status === 'ready' && (
         <>
-          {state.summary.isCurrentMonth && <BudgetBanner budget={state.summary.budget} />}
+          {state.summary.isCurrentMonth && (
+            <>
+              <BudgetBanner budget={state.summary.budget} />
+              <ProjectBudgetBanners state={budgets.banners} />
+            </>
+          )}
           <UnpricedBanner count={state.summary.unpricedCount} />
           <SummaryCards summary={state.summary} />
           <div className="grid">
