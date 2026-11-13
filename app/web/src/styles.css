@@ -205,3 +205,41 @@ tfoot td {
   gap: 12px;
   margin-top: 12px;
 }
+
+.budget-rows {
+  display: grid;
+  gap: 8px;
+}
+
+.budget-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.budget-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.budget-project {
+  min-width: 140px;
+}
+
+.budget-spent {
+  margin: 0;
+  min-width: 190px;
+  font-variant-numeric: tabular-nums;
+}
+
+.budget-row input {
+  width: 120px;
+}
+
+.budget-amount {
+  min-width: 80px;
+  font-variant-numeric: tabular-nums;
+}

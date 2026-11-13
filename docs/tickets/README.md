@@ -17,7 +17,7 @@ Tickets for the AI Usage & Cost Tracker. One file per ticket, named `EXP-1XX.md`
 | [EXP-111](EXP-111.md) | Feature | Add a usage record from the dashboard | Done |
 | [EXP-112](EXP-112.md) | Feature | Store project budgets and report each project's budget status | Done |
 | [EXP-113](EXP-113.md) | Feature | Show a banner for each project that is near or over its budget | Done |
-| [EXP-114](EXP-114.md) | Feature | Set and remove project budgets from the dashboard | Open |
+| [EXP-114](EXP-114.md) | Feature | Set and remove project budgets from the dashboard | Done |
 
 ## Template
 
