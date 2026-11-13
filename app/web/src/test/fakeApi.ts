@@ -39,6 +39,8 @@ export interface FakeApiOptions {
   /** One handler per call of `/api/project-budgets`; the last one repeats. */
   budgets: Array<() => Promise<Response> | Response>
   summary?: (month: string) => Promise<Response> | Response
+  /** Handles `PUT` and `DELETE` on `/api/project-budgets/<project>`. */
+  mutation?: (request: { method: string; url: string; body: unknown }) => Promise<Response> | Response
 }
 
 /** Stubs `fetch` for every endpoint the dashboard calls. Returns the list of requested URLs. */
@@ -50,6 +52,10 @@ export const stubApi = (options: FakeApiOptions): string[] => {
     vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
       const url = String(input)
       calls.push(`${init?.method ?? 'GET'} ${url}`)
+      if (url.startsWith('/api/project-budgets/') && options.mutation) {
+        const body = typeof init?.body === 'string' ? (JSON.parse(init.body) as unknown) : undefined
+        return options.mutation({ method: init?.method ?? 'GET', url, body })
+      }
       if (url.startsWith('/api/project-budgets')) {
         const handler = options.budgets[Math.min(budgetCalls, options.budgets.length - 1)]
         budgetCalls += 1
