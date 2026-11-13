@@ -15,7 +15,7 @@ Tickets for the AI Usage & Cost Tracker. One file per ticket, named `EXP-1XX.md`
 | [EXP-109](EXP-109.md) | Bug | One usage row without a price breaks every read of its month | Done |
 | [EXP-110](EXP-110.md) | Bug | An invalid pricing.json is accepted silently and gives wrong costs | Done |
 | [EXP-111](EXP-111.md) | Feature | Add a usage record from the dashboard | Done |
-| [EXP-112](EXP-112.md) | Feature | Store project budgets and report each project's budget status | Open |
+| [EXP-112](EXP-112.md) | Feature | Store project budgets and report each project's budget status | Done |
 | [EXP-113](EXP-113.md) | Feature | Show a banner for each project that is near or over its budget | Open |
 | [EXP-114](EXP-114.md) | Feature | Set and remove project budgets from the dashboard | Open |
 
