@@ -57,6 +57,11 @@ export const parseNewUsageRecord = (body: unknown, pricing: PriceTable): NewUsag
   }
 
   const project = requireString(input, 'project')
+  // A browser shortens `/api/project-budgets/..` to `/api/` (also when encoded as %2E%2E), so a
+  // budget could never be set for such a project.
+  if (project === '.' || project === '..') {
+    throw new ValidationError('project must not be "." or ".."')
+  }
   const inputTokens = requireCount(input, 'inputTokens')
   const outputTokens = requireCount(input, 'outputTokens')
   // Cached tokens are part of the input tokens, so more cached than input gives a negative cost.

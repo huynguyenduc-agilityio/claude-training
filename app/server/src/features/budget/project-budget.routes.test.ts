@@ -125,6 +125,17 @@ describe('GET /api/project-budgets', () => {
     ])
   })
 
+  it('sorts by code point, not by UTF-16 unit: U+FF5E before U+1F600 (EXP-115 scenario 1)', async () => {
+    const api = await start(['proj-\u{1F600}', 'proj-～'].map((name) => spend(name, 1)))
+
+    const body = await api.list()
+
+    expect(body.projects.map((p: { project: string }) => p.project)).toEqual([
+      'proj-～',
+      'proj-\u{1F600}',
+    ])
+  })
+
   it('lists a project that has records only in a past month, spent 0 (A-03)', async () => {
     const api = await start([spend('old', 500, PAST)])
 

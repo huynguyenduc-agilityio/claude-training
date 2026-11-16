@@ -3,7 +3,7 @@
 - **From:** [brief.md](brief.md), [intake.md](intake.md) (client answers, rounds 1 and 2), and the
   decisions in [zero-questions.md](zero-questions.md)
 - **Tickets:** [EXP-112](../../tickets/EXP-112.md), [EXP-113](../../tickets/EXP-113.md),
-  [EXP-114](../../tickets/EXP-114.md)
+  [EXP-114](../../tickets/EXP-114.md), and the review fixes in [EXP-115](../../tickets/EXP-115.md)
 - **Test matrix:** [test-matrix.md](test-matrix.md)
 - **Status:** approved by the client on 2026-11-11, with the answers to the zero-questions rounds
 - **Source of truth:** the repo. This file states the requirements; each ticket states the detailed
@@ -24,7 +24,12 @@ API and storage (EXP-112):
   at most two decimals.
 - **R2.** A budget applies to the current month until it is changed or removed. There is no history.
 - **R3.** A budget can be set, changed and removed. A removed budget leaves the project with no budget.
-- **R4.** Only a project that has at least one usage record can have a budget.
+- **R4.** Only a project that has at least one usage record can have a budget. `POST /api/usage`
+  rejects the project names `.` and `..` with `400` and `{"error": "project must not be \".\" or
+  \"..\""}` (checked after `project is required`), because the browser shortens
+  `/api/project-budgets/..` to `/api/` before sending it, even when the dots are encoded as `%2E`, so
+  no budget could be set for them. Names that only contain dots among other characters (`...`,
+  `.hidden`, `a.b`) stay valid. Records stored before this rule are not migrated (EXP-115).
 - **R5.** For each project with usage records, the API reports this month's spending, the budget, the
   share spent and a level: `none` without a budget, `ok` below 80%, `warning` from 80%, `exceeded`
   from 100%.
@@ -64,14 +69,17 @@ Form (EXP-114):
 }
 ```
 
-- `projects` is sorted by project name in code-point order and holds every project that has a
-  usage record in any month.
+- `projects` is sorted by project name in code-point order (not by UTF-16 code unit: `proj-～`,
+  U+FF5E, comes before `proj-😀`, U+1F600) and holds every project that has a usage record in any
+  month.
 - `spent` is computed as `byProject` in `summarizeMonth`: priced records only, rounded to cents.
 - `percent` and `level` are computed in whole cents, at the same thresholds as `budgetStatus`
   (80% and 100%). `ratio` is `spent / budget` for information only. A project without a budget is
   handled separately, since `budgetStatus` needs one. The page never computes `percent` or `level`;
   it only orders banners by comparing shares in whole cents from `spent` and `budget` (EXP-113).
-  EXP-112 gives the formulas.
+  The comparison is exact: it cross-multiplies the whole cents (`s1 × b2` against `s2 × b1`) in
+  integer arithmetic (`BigInt`), because JavaScript numbers lose precision above 2^53 and two
+  different shares would compare as equal (EXP-115). EXP-112 gives the formulas.
 
 `PUT /api/project-budgets/:project` with `{"budgetUsd": number}`:
 

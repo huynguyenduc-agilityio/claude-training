@@ -113,6 +113,40 @@ describe('POST /api/usage', () => {
     expect(response.status).toBe(201)
     expect(repository.listAll()).toMatchObject([{ inputTokens: Number.MAX_SAFE_INTEGER }])
   })
+
+  // Kept last: the test above expects the repository to hold exactly one record.
+  it.each(['.', '..'])(
+    'rejects the project %j with 400 and saves nothing (EXP-115 scenario 2)',
+    async (project) => {
+      const before = repository.listAll().length
+      const response = await post({
+        timestamp: '2026-10-15T03:00:00Z',
+        model: 'orion-mini',
+        project,
+        inputTokens: 10,
+        outputTokens: 1,
+      })
+
+      expect(response.status).toBe(400)
+      expect(await response.json()).toEqual({ error: 'project must not be "." or ".."' })
+      expect(repository.listAll()).toHaveLength(before)
+    },
+  )
+
+  it.each(['...', '.hidden', 'a.b'])(
+    'accepts the project %j with 201 (EXP-115 scenario 3)',
+    async (project) => {
+      const response = await post({
+        timestamp: '2026-10-15T03:00:00Z',
+        model: 'orion-mini',
+        project,
+        inputTokens: 10,
+        outputTokens: 1,
+      })
+
+      expect(response.status).toBe(201)
+    },
+  )
 })
 
 describe('GET /api/usage/export.csv', () => {

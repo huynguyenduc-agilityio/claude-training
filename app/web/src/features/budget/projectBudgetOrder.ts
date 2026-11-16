@@ -17,9 +17,15 @@ const compareCodePoints = (a: string, b: string): number => {
 const hasBanner = (entry: ProjectBudget): boolean =>
   entry.level === 'warning' || entry.level === 'exceeded'
 
-/** Share spent against the budget, compared by cross-multiplying whole cents: s1 × b2 vs s2 × b1. */
-const compareShares = (a: ProjectBudget, b: ProjectBudget): number =>
-  toCents(b.spent) * toCents(a.budget ?? 0) - toCents(a.spent) * toCents(b.budget ?? 0)
+/**
+ * Share spent against the budget, compared by cross-multiplying whole cents: s1 × b2 vs s2 × b1.
+ * The products are BigInt: above 2^53 JavaScript numbers round and two shares could look equal.
+ */
+const compareShares = (a: ProjectBudget, b: ProjectBudget): number => {
+  const left = BigInt(toCents(b.spent)) * BigInt(toCents(a.budget ?? 0))
+  const right = BigInt(toCents(a.spent)) * BigInt(toCents(b.budget ?? 0))
+  return left > right ? 1 : left < right ? -1 : 0
+}
 
 /**
  * The projects that get a banner, in display order: exceeded before warning, then the higher share

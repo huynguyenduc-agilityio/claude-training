@@ -38,16 +38,17 @@ type Action = 'save' | 'remove'
 
 export const ProjectBudgetsSection = ({ section, month, refresh }: ProjectBudgetsSectionProps) => {
   // Kept here, not in the rows, so typed text and messages survive reloads of the data.
-  const [rows, setRows] = useState<Record<string, RowState>>({})
+  // A Map, not an object: no project name (`constructor`, `__proto__`) can hit an inherited property.
+  const [rows, setRows] = useState<Map<string, RowState>>(() => new Map())
 
   const update = (project: string, change: (row: RowState) => RowState) =>
-    setRows((previous) => ({ ...previous, [project]: change(previous[project] ?? NEW_ROW) }))
+    setRows((previous) => new Map(previous).set(project, change(previous.get(project) ?? NEW_ROW)))
 
   const edit = (project: string, text: string) =>
     update(project, (row) => ({ ...row, text, message: undefined, rev: row.rev + 1 }))
 
   const run = async (project: string, action: Action, typed: string) => {
-    const sentRev = (rows[project] ?? NEW_ROW).rev
+    const sentRev = (rows.get(project) ?? NEW_ROW).rev
     // An answer applies to the row only if the field was not edited since the request started.
     const unchanged = (row: RowState) => row.rev === sentRev
     update(project, (row) => ({ ...row, pending: true }))
@@ -89,7 +90,7 @@ export const ProjectBudgetsSection = ({ section, month, refresh }: ProjectBudget
         {month !== section.month && <p className="muted">Spending shown for {section.month}.</p>}
         <div className="budget-rows">
           {section.projects.map((entry) => {
-            const row = rows[entry.project] ?? NEW_ROW
+            const row = rows.get(entry.project) ?? NEW_ROW
             const submit = (event: FormEvent<HTMLFormElement>) => {
               event.preventDefault()
               void run(entry.project, 'save', row.text ?? apiText(entry))

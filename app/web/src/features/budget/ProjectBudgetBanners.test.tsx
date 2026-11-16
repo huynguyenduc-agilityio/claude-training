@@ -77,6 +77,23 @@ describe('ProjectBudgetBanners', () => {
     expect(texts[2]).toContain('for a:')
   })
 
+  it('orders banners exactly for large amounts (EXP-115 scenario 5)', () => {
+    render(
+      <ProjectBudgetBanners
+        state={{
+          status: 'ready',
+          projects: [
+            budgetEntry('a', 999999.99, 2999999.96, 299, 'exceeded'),
+            budgetEntry('b', 1000000, 2999999.99, 299, 'exceeded'),
+          ],
+        }}
+      />,
+    )
+    const texts = screen.getAllByRole('alert').map((banner) => banner.textContent)
+    expect(texts[0]).toContain('for b:')
+    expect(texts[1]).toContain('for a:')
+  })
+
   it('shows one error line when the budgets could not load (B-09)', () => {
     const { container } = render(
       <ProjectBudgetBanners state={{ status: 'error', message: 'Request failed: 500' }} />,

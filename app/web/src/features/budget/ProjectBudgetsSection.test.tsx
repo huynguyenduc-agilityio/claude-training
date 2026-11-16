@@ -524,3 +524,38 @@ describe('Remove', () => {
     expect(alert.textContent).toBe('project not found')
   })
 })
+
+describe('project names that are Object.prototype properties (EXP-115 scenario 4)', () => {
+  it.each(['constructor', 'toString', '__proto__'])(
+    'saves a budget and shows the API error for %s',
+    async (project) => {
+      let calls = 0
+      stubApi({
+        budgets: [],
+        mutation: () => {
+          calls += 1
+          return calls === 1
+            ? json(budgetEntry(project, 10, 1, 10, 'ok'))
+            : json({ error: 'budgetUsd must have at most 2 decimals' }, 400)
+        },
+      })
+      renderReady({
+        projects: [budgetEntry(project, null, 1, null, 'none')],
+        onRefresh: async () => dataFor([budgetEntry(project, 10, 1, 10, 'ok')]),
+      })
+
+      typeIn(project, '10')
+      save(project)
+
+      await row(project).findByText('Saved')
+      await waitFor(() => expect(row(project).getByText('$10.00')).not.toBeNull())
+
+      typeIn(project, '10.005')
+      save(project)
+
+      const alert = await row(project).findByRole('alert')
+      expect(alert.textContent).toBe('budgetUsd must have at most 2 decimals')
+      expect(field(project).value).toBe('10.005')
+    },
+  )
+})
