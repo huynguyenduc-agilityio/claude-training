@@ -44,7 +44,17 @@ export const projectBudgetEntry = (
   }
 }
 
-const byCodePoint = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0)
+/** Compares by code point. `<` on strings compares UTF-16 units, which puts U+1F600 before U+FF5E. */
+const byCodePoint = (a: string, b: string): number => {
+  const left = Array.from(a)
+  const right = Array.from(b)
+  const length = Math.min(left.length, right.length)
+  for (let index = 0; index < length; index += 1) {
+    const difference = (left[index] as string).codePointAt(0)! - (right[index] as string).codePointAt(0)!
+    if (difference !== 0) return difference
+  }
+  return left.length - right.length
+}
 
 /** Every project that has a usage record in any month, with its status for `month`. */
 export const listProjectBudgets = (

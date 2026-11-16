@@ -46,6 +46,25 @@ describe('parseNewUsageRecord', () => {
     )
   })
 
+  it.each(['.', '..'])('rejects the project %j (EXP-115 scenario 2)', (project) => {
+    expect(() => parseNewUsageRecord({ ...valid, project }, pricing)).toThrow(
+      'project must not be "." or ".."',
+    )
+  })
+
+  it.each(['...', '.hidden', 'a.b'])(
+    'accepts the project %j, which has dots but is not only "." or ".." (EXP-115 scenario 3)',
+    (project) => {
+      expect(parseNewUsageRecord({ ...valid, project }, pricing)).toMatchObject({ project })
+    },
+  )
+
+  it('reports a missing project before the dot rule (EXP-115 scenario 2)', () => {
+    expect(() => parseNewUsageRecord({ ...valid, project: '' }, pricing)).toThrow(
+      'project is required',
+    )
+  })
+
   it('rejects a non-integer token count', () => {
     expect(() => parseNewUsageRecord({ ...valid, inputTokens: '12' }, pricing)).toThrow(
       'inputTokens must be an integer',

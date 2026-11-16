@@ -123,4 +123,10 @@ describe('listProjectBudgets', () => {
       ['code-review', 5],
     ])
   })
+
+  it('sorts by code point, not by UTF-16 unit: U+FF5E before U+1F600 (EXP-115 scenario 1)', () => {
+    const entries = list([record('proj-\u{1F600}', 100, IN_MONTH), record('proj-～', 100, IN_MONTH)])
+
+    expect(entries.map((entry) => entry.project)).toEqual(['proj-～', 'proj-\u{1F600}'])
+  })
 })

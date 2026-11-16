@@ -65,6 +65,15 @@ describe('bannerProjects', () => {
     expect(names(result)).toEqual(['Ａ', '\u{1F600}'])
   })
 
+  it('compares shares exactly above 2^53 (EXP-115 scenario 5)', () => {
+    // 299999999 / 100000000 beats 299999996 / 99999999 by one unit of the cross product,
+    // which two JavaScript numbers cannot tell apart.
+    const a = budgetEntry('a', 999999.99, 2999999.96, 299, 'exceeded')
+    const b = budgetEntry('b', 1000000, 2999999.99, 299, 'exceeded')
+    expect(names(bannerProjects([a, b]))).toEqual(['b', 'a'])
+    expect(names(bannerProjects([b, a]))).toEqual(['b', 'a'])
+  })
+
   it('returns an empty list when nothing is near or over its budget', () => {
     expect(bannerProjects([])).toEqual([])
   })
